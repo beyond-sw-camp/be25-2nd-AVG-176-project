@@ -55,7 +55,7 @@ public class SourcingService {
             errors.add("mainImageUrl이 누락 되었습니다.");
         }
 
-        // 데이터 안에 옵션 없는 경우 작성.
+        // 데이터 안에 옵션 없는 경우 작성. 근데 이건 없애도 될듯함.
         if (productData.getOptions() == null || productData.getOptions().isEmpty()) {
             errors.add("options가 누락 되었습니다.");
         } else {
@@ -69,9 +69,9 @@ public class SourcingService {
             }
         }
 
-        return errors;
-    
+        return errors;    
 }
+
 
     @Transactional
     public void saveSourcingData(SourcingDTO sourcingDTO) {
