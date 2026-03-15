@@ -59,34 +59,72 @@
 
 ## 3. 📝 요구사항 정의서
 
----
+<details>
+   <summary>세부사항</summary>
+<div markdown="1">
+  <a href="https://docs.google.com/spreadsheets/d/1dIV9X2avDBPIIPxYHD-rsDEI2gGXk_7wAITY9AfHpv4/edit?gid=437937772#gid=437937772">요구사항 정의서</a>
+</div>
+</details>
+<br>
 
 ## 4. 🗄 ERD
 
----
+<details>
+   <summary>세부사항</summary>
+<div markdown="1">
+  <a href="https://www.erdcloud.com/d/3aqxuohvoJweoPJN2">ERD</a>
+</div>
+</details>
+<br>
 
 ## 5. 📑 테이블 정의서
 
----
+<details>
+   <summary>세부사항</summary>
+<div markdown="1">
+  <a href="https://docs.google.com/spreadsheets/d/1dIV9X2avDBPIIPxYHD-rsDEI2gGXk_7wAITY9AfHpv4/edit?gid=1224156399#gid=1224156399">테이블 정의서</a>
+</div>
+</details>
+<br>
 
 ## 6. 🏗 시스템 아키텍처
 
----
 
 ## 7. 📡 API 명세서
 
----
+<details>
+   <summary>세부사항</summary>
+<div markdown="1">
+  <a href="https://docs.google.com/spreadsheets/d/1dIV9X2avDBPIIPxYHD-rsDEI2gGXk_7wAITY9AfHpv4/edit?gid=2024832708#gid=2024832708">API 명세서</a>
+</div>
+</details>
+<br>
 
 ## 8. 🖥 화면 및 기능 설계서
 
----
 
 ## 9. 🧪 테스트 계획 및 결과 보고서
 
----
 
 ## 10. 🔎 회고
 
+<details>
+<summary>세부사항</summary>
+
+<br>
+
+| 조원이름 | 회고 |
+|----------|------|
+| 민정기 |  |
+| 이진 |  |
+| 김지연 |  |
+| 박지인 |  |
+| 이용호 |  |
+| 현재진 |  |
+
+</details>
+
+<br>
 
 
 
