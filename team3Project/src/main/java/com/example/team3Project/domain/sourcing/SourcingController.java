@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class SourcingController {
 
     private final SourcingService sourcingService;
-    
+    private final NormalizationService normalizationService;
+
 
     @GetMapping("/")
     public String mainHome() {
@@ -51,6 +53,16 @@ public class SourcingController {
         
         return response;
 
+    }
+
+    @PostMapping("/normalization/{id}")
+    public String normalization(@PathVariable Long id) {
+        // 한번에 작동 시키기
+        // 일단 해놔야 하는것 fastAPI 적용하여 나노 바나나 적용시키기.
+        normalizationService.normalize(id);
+        return "정규화 완료 상품 아이디: " + id;
+
+    
     }
     
 

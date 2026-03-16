@@ -8,52 +8,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-//test.json 파일 보고 만든 DTO. 한번 크롤링후 어떻게 될지 json 파일 보고 수정할수도?
 public class SourcingDTO {
-    // json파일에서 source_url을 찾아서 데이터를 저장하게 함. 하지만 이름이 같다면 굳이 JsonProperty를 사용할 필요 없음.
-    @JsonProperty("source_url")
-    // 그렇다면 왜 사용하는가? camelCase때문에.
-    private String sourceUrl;
+    
+    @JsonProperty("url")
+    private String url;
 
-    @JsonProperty("site_name")
-    private String siteName;
+    @JsonProperty("asin")
+    private String asin;
 
-    @JsonProperty("product_id")
-    private String productId;
+    @JsonProperty("title")
+    private String title;
 
-    @JsonProperty("collected_at")
-    private String collectedAt;
+    @JsonProperty("price")
+    private BigDecimal price;
 
-    @JsonProperty("data")
-    private ProductData data;
+    @JsonProperty("currency")
+    private String currency;
 
-    @Data
-    public static class ProductData {
-        private String title;
+    @JsonProperty("brand")
+    private String brand;
 
-        @JsonProperty("original_price")
-        private BigDecimal originalPrice;
+    @JsonProperty("url_image")
+    private String urlImage;
 
-        private String currency;
-        private String brand;
+    @JsonProperty("images")
+    private List<String> images;
 
-        @JsonProperty("main_image")
-        private String mainImageUrl;
-
-        @JsonProperty("description_images")
-        private List<String> descriptionImages;
-
-        private List<Option> options;
-
-        @JsonProperty("stock_status")
-        private String stockStatus;
-    }
-
-    @Data
-    public static class Option {
-        private String name;
-        private String values;
-        private Boolean available;
-    }
 
 }

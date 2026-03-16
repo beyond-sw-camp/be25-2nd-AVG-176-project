@@ -14,89 +14,77 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SourcingService { 
 
-    // mariaDB에 저장하기 위한 하나의 객체.
+    // MariaDB에 저장하기 위한 하나의 객체.
     private final SourcingRepository sourcingRepository;
 
-    // 일단 json 파일이 제대로 원하는 값들이 있는지 확인. 즉, 검증
+    // 일단 json 파일이 제대로 원하는 값들이 있는지 확인. 즉, 검증하기
     public List<String> validateSourcingData(SourcingDTO sourcingDTO) {
         List<String> errors = new ArrayList<>();
         
        // json 파일 확인 해보는데 만약 뭔가가 누락이 되었다면, 그 즉시 누락 되었다고 나오기.
-        if (!StringUtils.hasText(sourcingDTO.getSourceUrl())) {
-            errors.add("sourceUrl가 누락 되었습니다.");
-        } else if (!sourcingDTO.getSourceUrl().startsWith("http")) {
-            errors.add("sourceUrl이 유효하지 않습니다.");
-        }
+        if (!StringUtils.hasText(sourcingDTO.getUrl())) {
+            errors.add("url이 누락 되었습니다.");
+        } 
+
         // 상품 ID 확인
-        if (!StringUtils.hasText(sourcingDTO.getProductId())) {
-            errors.add("productId가 누락 되었습니다.");
+        if (!StringUtils.hasText(sourcingDTO.getAsin())) {
+            errors.add("asin(productId)이 누락 되었습니다.");
         }
-        else if (sourcingRepository.existsByProductId(sourcingDTO.getProductId())) {
+        else if (sourcingRepository.existsByProductId(sourcingDTO.getAsin())) {
             errors.add("이미 등록된 상품입니다.");
         }
-        // 옵션 및 다양한 data 누락 되었는지 확인하기.
-        if (sourcingDTO.getData() == null) {
-            errors.add("data의 정보가 누락 되었습니다.");
-            // 여기에 없으면 바로 return 하면 되니까.
-            return errors;
-        }
         
-        // 데이터 안의 정보들 있는지 확인하기 위해 미리 사용
-        SourcingDTO.ProductData productData = sourcingDTO.getData();
-
-        if (!StringUtils.hasText(productData.getTitle())) {
+        if (!StringUtils.hasText(sourcingDTO.getTitle())) {
             errors.add("title이 누락 되었습니다.");
         }
         
-        if (productData.getOriginalPrice() == null) {
-            errors.add("originalPrice가 누락 되었습니다.");
-        } else if (productData.getOriginalPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (sourcingDTO.getPrice() == null) {
+            errors.add("price가 누락 되었습니다.");
+        } else if (sourcingDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             errors.add("상품 가격은 0보다 커야 합니다.");
         }
 
-        if (!StringUtils.hasText(productData.getCurrency())) {
+        if (!StringUtils.hasText(sourcingDTO.getCurrency())) {
             errors.add("currency가 누락 되었습니다.");
         }
 
-        if (!StringUtils.hasText(productData.getBrand())){
+        if (!StringUtils.hasText(sourcingDTO.getBrand())){
             errors.add("brand가 누락 되었습니다.");
         }
-
-        if (!StringUtils.hasText(productData.getMainImageUrl())) {
-            errors.add("mainImageUrl이 누락 되었습니다.");
+        // 메인 이미지
+        if (!StringUtils.hasText(sourcingDTO.getUrlImage())) {
+            errors.add("url_image가 누락 되었습니다.");
+        }
+        // 부가 이미지들.
+        if (sourcingDTO.getImages() == null || sourcingDTO.getImages().isEmpty()) {
+            errors.add("images가 누락 되었습니다.");
         }
 
-        // 데이터 안에 옵션 없는 경우 작성. 근데 이건 없애도 될듯함.
-        if (productData.getOptions() == null || productData.getOptions().isEmpty()) {
-            errors.add("options가 누락 되었습니다.");
-        } else {
-            for (SourcingDTO.Option option : productData.getOptions()) {
-                if (!StringUtils.hasText(option.getName())) {
-                    errors.add("option의 name이 누락 되었습니다.");
-                }
-                if (option.getValues() == null || option.getValues().isEmpty()) {
-                    errors.add("option의 values가 누락 되었습니다.");
-                }
-            }
-        }
 
         return errors;    
-}
-
+    }
 
     @Transactional
+    // 테이블 생성 및 옵션 테이블에 데이터 추가.
     public void saveSourcingData(SourcingDTO sourcingDTO) {
+        
+        /* test.json에 옵션 데이터가 없어 주석 처리
+        List<Sourcing.ProductOption> options = new ArrayList<>(); ...
+        */
+
+        // 상대 경로인 url을 아마존 절대 경로로 변환
+        String fullAmazonUrl = "https://www.amazon.com" + sourcingDTO.getUrl();
+
         Sourcing sourcing = Sourcing.builder()
-                .sourceUrl(sourcingDTO.getSourceUrl())
-                .siteName(sourcingDTO.getSiteName())
-                .productId(sourcingDTO.getProductId())
-                .collectedAt(sourcingDTO.getCollectedAt())
-                .title(sourcingDTO.getData().getTitle())
-                .originalPrice(sourcingDTO.getData().getOriginalPrice())
-                .currency(sourcingDTO.getData().getCurrency())
-                .brand(sourcingDTO.getData().getBrand())
-                .mainImageUrl(sourcingDTO.getData().getMainImageUrl())
-                .stockStatus(sourcingDTO.getData().getStockStatus())
+                .sourceUrl(fullAmazonUrl) // 절대 경로로 저장
+                .siteName("Amazon") // test.json에 없으므로 고정값 부여
+                .productId(sourcingDTO.getAsin())
+                .title(sourcingDTO.getTitle())
+                .originalPrice(sourcingDTO.getPrice())
+                .currency(sourcingDTO.getCurrency())
+                .brand(sourcingDTO.getBrand())
+                .mainImageUrl(sourcingDTO.getUrlImage())
+                .descriptionImages(sourcingDTO.getImages())
                 .build();
 
         sourcingRepository.save(sourcing);
