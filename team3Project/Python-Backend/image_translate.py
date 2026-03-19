@@ -16,7 +16,7 @@ from text_translate import router as text_router
 
 """
 각자의 API키를 사용하도록 합시다!!!!!
-*** Gemini 3-1 Flash의 경우는 무조건 하루 20장 이상 사용하면 돈 나갑니다. 이점 주의 해주세요. ***
+*** 결제 수단이 등록되지 않은 새 프로젝트의 API 키를 사용하면 하루 최대 500장까지 무료로 사용할 수 있습니다. ***
 """
 load_dotenv()
 
@@ -50,7 +50,7 @@ class TranslateResponse(BaseModel):
     local_image_path: str
     result_image_path: str
 
-# 이미지 확인하고 파악하는데 꼭 필요헌 가눙,
+# 이미지 확인하고 파악하는데 꼭 필요한 기능.
 def download_image_playwright(image_url: str) -> bytes:
     """Playwright로 실제 브라우저처럼 이미지 다운로드 (Amazon CDN 차단 우회)"""
     with sync_playwright() as p:
@@ -173,7 +173,10 @@ def translate(req: TranslateRequest):
                 print(f"결과 이미지 저장 완료: {result_image_path}")
 
     except Exception as e:
-        print(f"Gemini 호출 실패: {e}")
+        error_msg = str(e)
+        if NANOBANANA_API_KEY:
+            error_msg = error_msg.replace(NANOBANANA_API_KEY, "***")
+        print(f"Gemini 호출 실패: {type(e).__name__}: {error_msg}")
 
     return TranslateResponse(local_image_path=local_image_path, result_image_path=result_image_path)
 
@@ -184,6 +187,7 @@ def health():
     return {"status": "ok"}
 
 
+# 실제 서버 실행.
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

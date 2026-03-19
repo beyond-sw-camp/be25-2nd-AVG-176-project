@@ -1,13 +1,12 @@
 package com.example.team3Project.domain.sourcing;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-
-import com.example.team3Project.domain.sourcing.TranslationService.TranslationResult;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,52 +17,102 @@ import lombok.RequiredArgsConstructor;
 public class NormalizationService {
 
     private final SourcingRepository sourcingRepository;
+    private final SourcingVariationRepository sourcingVariationRepository;
     private final TranslationService translationService;
     private final CurrencyService currencyService;
 
+    // 동시 Gemini 호출 최대 2개로 제한
+    private final Semaphore semaphore = new Semaphore(2);
+
     public void normalize(Long id) {
-        // 상품 찾기. 
+        // 상품 찾기.
         Sourcing sourcing = sourcingRepository.findById(id)
                                               .orElseThrow(() -> new RuntimeException("상품 없음"));
-        
         // KRW로 변환
         BigDecimal krwPrice = currencyService.changeKRWPrice(id);
-        
-        //원본 상세 이미지 번역하기.
-        //원본 상세 이미지.
-        List<String> descriptionImages = sourcing.getDescriptionImages();
-        // 번역된 상세 이미지 저장소.
-        List<String> newDescriptionImages = new ArrayList<>();
-        // 상품 제목 원본.
-        String originalTitle = sourcing.getTitle();
 
-        // 1. 제목을 비동기적으로 번역합니다.
+        // 1. 제목, 브랜드 비동기 번역 동기식으로 가면 오래 걸릴 예정. 2개 동시에 돌리기.
         CompletableFuture<String> titleFuture = CompletableFuture.supplyAsync(() ->
-            translationService.translateText(originalTitle)  
+            translationService.translateText(sourcing.getTitle())
+        );
+        CompletableFuture<String> brandFuture = CompletableFuture.supplyAsync(() ->
+            translationService.translateText(sourcing.getBrand())
         );
 
-        // 2. 번역 작업이 완료될 때까지 대기 및 결과 가져오기
         String translatedTitle = titleFuture.join();
+        String translatedBrand = brandFuture.join();
 
-
-        // 상품 상세 이미지 번역하기.
+        // 2. 상품 상세 이미지 번역 (최대 3장, 세마포어로 동시 2개 제한)
+        List<String> descriptionImages = sourcing.getDescriptionImages();
+        System.out.println("descriptionImages 수: " + (descriptionImages == null ? "null" : descriptionImages.size()));
         if (descriptionImages != null) {
-            for (String imgUrl : descriptionImages) {
-                if (imgUrl != null && imgUrl.startsWith("http")) {
-                    // 각각의 상세 이미지 번역 서버로 전송하기.
-                    TranslationResult resultImage = translationService.translateToKorean(translatedTitle,imgUrl);
-                    newDescriptionImages.add(resultImage.resultImagePath()); // 번역된 이미지 경로 추가
-                } else {
-                    newDescriptionImages.add(imgUrl); // http가 아니거나 null인 경우 원본 유지
-                }
-            }
-            // 상세 이미지 리스트 업데이트 (새로 만든 리스트로 교체)
-            sourcing.setDescriptionImages(newDescriptionImages);
+            List<String> limited = descriptionImages.stream().limit(3).toList();
+            System.out.println("번역 대상 이미지 수: " + limited.size());
+            long startTime = System.currentTimeMillis();
+
+            List<CompletableFuture<String>> futures = limited.stream()
+                .map(imgUrl -> CompletableFuture.supplyAsync(() -> {
+                    if (imgUrl == null || !imgUrl.startsWith("http")) return imgUrl;
+                    try {
+                        semaphore.acquire();
+                        try {
+                            
+                            String resultedImage =  translationService.translateToKorean(translatedTitle, imgUrl).resultImagePath();
+                            
+                            return resultedImage;
+                        } finally {
+                            semaphore.release();
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return imgUrl;
+                    }
+                }))
+                .toList();
+
+            sourcing.setDescriptionImages(futures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
+            long endTime = System.currentTimeMillis();
+            System.out.println("번역완료: "+ (endTime - startTime) + "ms");
         }
 
-        // 메인 이미지는 번역하지 않으니 원본 URL을 그대로 유지. DB에 올라갈 데이터 수정.
-        sourcing.normalize(krwPrice, translatedTitle, sourcing.getMainImageUrl(), sourcing.getMainImageUrl());
+        // 메인 이미지는 번역하지 않고 원본 유지
+        sourcing.normalize(krwPrice, translatedTitle, translatedBrand, sourcing.getMainImageUrl(), sourcing.getMainImageUrl());
+        
+
+        // 3. 각 variation(옵션)의 상세 이미지 번역 (최대 3장, 세마포어 공유)
+        List<SourcingVariation> variations = sourcing.getVariations();
+        if (variations != null) {
+            for (SourcingVariation variation : variations) {
+                if (variation.getImages() == null) continue;
+
+                List<String> limited = variation.getImages().stream().limit(3).toList();
+
+                List<CompletableFuture<String>> futures = limited.stream()
+                    .map(imgUrl -> CompletableFuture.supplyAsync(() -> {
+                        if (imgUrl == null || !imgUrl.startsWith("http")) return imgUrl;
+                        try {
+                            semaphore.acquire(); // 세마포어 사용 시작.
+                            try {
+                                long startTime = System.currentTimeMillis();
+                                
+                                String resultPath = translationService.translateToKorean(translatedTitle, imgUrl).resultImagePath();
+                                long endTime = System.currentTimeMillis();
+                                System.out.println("옵션 이미지 번역 완료 (" + (endTime - startTime) + "ms): " + imgUrl);
+                                return resultPath;
+                            } finally {
+                                semaphore.release();// 세마포어 종료. 
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return imgUrl;
+                        }
+                    }))
+                    .toList();
+
+                variation.setImages(futures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
+                sourcingVariationRepository.save(variation);
+            }
+        }
     }
-    
 
 }

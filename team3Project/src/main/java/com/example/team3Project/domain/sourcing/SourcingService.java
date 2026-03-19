@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SourcingService { 
 
-    // MariaDB에 저장하기 위한 하나의 객체.
     private final SourcingRepository sourcingRepository;
+    private final SourcingVariationRepository sourcingVariationRepository;
 
     // 일단 json 파일이 제대로 원하는 값들이 있는지 확인. 즉, 검증하기
     public List<String> validateSourcingData(SourcingDTO sourcingDTO) {
@@ -65,19 +65,14 @@ public class SourcingService {
     }
 
     @Transactional
-    // 테이블 생성 및 옵션 테이블에 데이터 추가.
     public void saveSourcingData(SourcingDTO sourcingDTO) {
-        
-        /* test.json에 옵션 데이터가 없어 주석 처리
-        List<Sourcing.ProductOption> options = new ArrayList<>(); ...
-        */
 
         // 상대 경로인 url을 아마존 절대 경로로 변환
         String fullAmazonUrl = "https://www.amazon.com" + sourcingDTO.getUrl();
-
+        // 소싱 데이터 저장.
         Sourcing sourcing = Sourcing.builder()
-                .sourceUrl(fullAmazonUrl) // 절대 경로로 저장
-                .siteName("Amazon") // test.json에 없으므로 고정값 부여
+                .sourceUrl(fullAmazonUrl)
+                .siteName("Amazon")
                 .productId(sourcingDTO.getAsin())
                 .title(sourcingDTO.getTitle())
                 .originalPrice(sourcingDTO.getPrice())
@@ -88,7 +83,26 @@ public class SourcingService {
                 .build();
 
         sourcingRepository.save(sourcing);
-        
+
+        // 소싱의 variation 저장
+        if (sourcingDTO.getVariation() != null) {
+            for (SourcingDTO.VariationDTO varDTO : sourcingDTO.getVariation()) {
+                SourcingVariation variation = SourcingVariation.builder()
+                        .sourcing(sourcing)
+                        .asin(varDTO.getAsin())
+                        .dimensions(varDTO.getDimensions())
+                        .selected(varDTO.isSelected())
+                        .price(varDTO.getPrice())
+                        .currency(varDTO.getCurrency())
+                        .stock(varDTO.getStock())
+                        .rating(varDTO.getRating())
+                        .reviewsCount(varDTO.getReviewsCount())
+                        .images(varDTO.getImages())
+                        .build();
+                sourcingVariationRepository.save(variation);
+            }
+        }
+
     }
 
 }

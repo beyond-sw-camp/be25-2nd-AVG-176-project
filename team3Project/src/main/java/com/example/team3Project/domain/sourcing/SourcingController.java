@@ -62,7 +62,6 @@ public class SourcingController {
         normalizationService.normalize(id);
         return "정규화 완료 상품 아이디: " + id;
 
-    
     }
     
 

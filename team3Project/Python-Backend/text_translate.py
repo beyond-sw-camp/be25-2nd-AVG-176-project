@@ -18,9 +18,7 @@ router = APIRouter()
 
 # image_translate.py에서 사용하는 것과 동일한 API 키 환경변수를 사용
 GEMINI_API_KEY = os.getenv("NANOBANANA_API_KEY") 
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent"
-
-
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 @router.get("/text_health")
 def health():
@@ -53,6 +51,11 @@ def translate_text(req: TranslateTextRequest):
 
         url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
         response = requests.post(url, json=payload)
+
+         # 에러 발생 시 원인을 정확히 파악하기 위해 응답 본문 출력
+        if not response.ok:
+            print(f"Gemini API 에러 상세 내용: {response.text}")
+
         response.raise_for_status()
 
         result = response.json()
@@ -61,6 +64,6 @@ def translate_text(req: TranslateTextRequest):
         return TranslateTextResponse(translated_text = translated_text)
     
     except Exception as e:
-        print("번역 실패", e)
-        raise HTTPException(status_code = 500, detail=str(e))
+        print("텍스트 번역 실패")
+        raise HTTPException(status_code = 500)
         

@@ -3,12 +3,14 @@ package com.example.team3Project.domain.sourcing;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +26,7 @@ public class Sourcing{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(length = 2048)
     private String sourceUrl;
     private String siteName;
@@ -41,14 +43,19 @@ public class Sourcing{
     @ElementCollection // 이 어노테이션은 테이블을 따로 생성해줌.
     private List<String> descriptionImages;
 
+    @OneToMany(mappedBy = "sourcing", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SourcingVariation> variations;
+
     private BigDecimal krwPrice;
     private String translatedTitle;
+    private String translatedBrand;
     private String resultImageUrl;
 
     // 바로 정규화된 값들 setter로 지정.
-    public void normalize(BigDecimal krwPrice, String translatedTitle, String mainImageUrl, String resultImageUrl) {
+    public void normalize(BigDecimal krwPrice, String translatedTitle, String translatedBrand, String mainImageUrl, String resultImageUrl) {
         this.krwPrice = krwPrice;
         this.translatedTitle = translatedTitle;
+        this.translatedBrand = translatedBrand;
         this.mainImageUrl = mainImageUrl;
         this.resultImageUrl = resultImageUrl;
     }

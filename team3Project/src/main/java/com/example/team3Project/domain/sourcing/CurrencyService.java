@@ -35,7 +35,7 @@ public class CurrencyService {
         
         // 가장 최근의 영업일(평일) 날짜를 동적으로 계산
         // String searchDate = getLastesWeekday();
-        // 테스트용 환율
+        // 테스트용 환율 나중에 일일 환율로 바꿀 예정. getLastesWeekday 이거 사용하면 그만.
         String searchDate = "20260311";
         URI uri = UriComponentsBuilder
                     .fromUriString("https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON")
