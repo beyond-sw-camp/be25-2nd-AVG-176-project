@@ -169,7 +169,7 @@
 <details>
    <summary>세부사항</summary>
 <div markdown="1">
-  <a href="figma.com/design/m2ExYsceFRsQDmCImIB0cT/-3조--AVG-height--174cm?node-id=0-1&t=rSGRTn1ylng2Qfa8-1">화면 및 기능 설계서</a>
+  <a href="https://www.figma.com/design/m2ExYsceFRsQDmCImIB0cT/-3%EC%A1%B0--AVG-height--174cm?node-id=0-1&p=f&t=aDgmD25W6KrZuLQb-0">화면 및 기능 설계서</a>
 </div>
 </details>
 <br>
