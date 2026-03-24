@@ -85,6 +85,15 @@ public class CurrencyService {
         return today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
     }
 
+    // 환율 BigDecimal로 반환 (variation 등 직접 변환용)
+    public BigDecimal getExchangeRate() {
+        String curCurrency = getCurrency();
+        if (curCurrency == null || !curCurrency.matches("^[0-9,.]+$")) {
+            throw new RuntimeException("유효하지 않은 환율 데이터: " + curCurrency);
+        }
+        return new BigDecimal(curCurrency.replace(",", ""));
+    }
+
     //DB에서 price 가져와서 가져온 환율 적용하기.
     public BigDecimal changeKRWPrice(Long id) {
         String curCurrency = getCurrency();

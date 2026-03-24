@@ -45,7 +45,13 @@ public class SourcingService {
         }
         
         if (sourcingDTO.getPrice() == null) {
-            errors.add("price가 누락 되었습니다.");
+            // price 없으면 variation에서 최솟값으로 대체 가능한지 확인
+            boolean hasVariationPrice = sourcingDTO.getVariation() != null &&
+                sourcingDTO.getVariation().stream()
+                    .anyMatch(v -> v.getPrice() != null && v.getPrice().compareTo(BigDecimal.ZERO) > 0);
+            if (!hasVariationPrice) {
+                errors.add("price가 누락 되었습니다. (variation에도 price가 없습니다)");
+            }
         } else if (sourcingDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             errors.add("상품 가격은 0보다 커야 합니다.");
         }
@@ -66,29 +72,39 @@ public class SourcingService {
             errors.add("images가 누락 되었습니다.");
         }
 
-
         return errors;    
     }
 
-    // 일단 variation 제대로 되는지 확인 해보기 위한 메소드
-    @Transactional
-    public Sourcing getSourcingWithVariations(Long id) {
-        return sourcingRepository.findByIdWithVariations(id)
-                .orElseThrow(() -> new RuntimeException("상품 없음"));
-    }
+    // 일단 variation 제대로 되는지 확인 해보기 위한 테스트 메소드
+    // @Transactional
+    // public Sourcing getSourcingWithVariations(Long id) {
+    //     return sourcingRepository.findByIdWithVariations(id)
+    //             .orElseThrow(() -> new RuntimeException("상품 없음"));
+    // }
 
     @Transactional
     public void saveSourcingData(SourcingDTO sourcingDTO) {
 
         // 상대 경로인 url을 아마존 절대 경로로 변환
         String fullAmazonUrl = "https://www.amazon.com" + sourcingDTO.getUrl();
+
+        // price가 없으면 variation 중 최솟값으로 대체
+        BigDecimal effectivePrice = sourcingDTO.getPrice();
+        if (effectivePrice == null && sourcingDTO.getVariation() != null) {
+            effectivePrice = sourcingDTO.getVariation().stream()
+                .map(SourcingDTO.VariationDTO::getPrice)
+                .filter(p -> p != null && p.compareTo(BigDecimal.ZERO) > 0)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
+        }
+
         // 소싱 데이터 저장.
         Sourcing sourcing = Sourcing.builder()
                 .sourceUrl(fullAmazonUrl)
                 .siteName("Amazon")
                 .productId(sourcingDTO.getAsin())
                 .title(sourcingDTO.getTitle())
-                .originalPrice(sourcingDTO.getPrice())
+                .originalPrice(effectivePrice)
                 .currency(sourcingDTO.getCurrency())
                 .brand(sourcingDTO.getBrand())
                 .mainImageUrl(sourcingDTO.getUrlImage())

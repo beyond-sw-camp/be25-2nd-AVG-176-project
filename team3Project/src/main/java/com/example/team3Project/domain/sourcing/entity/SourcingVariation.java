@@ -34,8 +34,8 @@ public class SourcingVariation {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 주요키
     private Long id;
 
-    //일단 ManyToOne을 통해 1대다 형태를 나타냄. Lazy의 경우는 옵션 데이터만 일단 가져오고 부모데이터는 가져오지 않음.
-    //가져오지 않아서 더 빠르게 가져올 수 있고 만약 부모 테이블이 가져와야 할 상황에야 비로소 가져옴.
+    // 일단 ManyToOne을 통해 1대다 형태를 나타냄. Lazy의 경우는 옵션 데이터만 일단 가져오고 부모데이터는 가져오지 않음.
+    // 가져오지 않아서 더 빠르게 가져올 수 있고 만약 부모 테이블이 가져와야 할 상황에야 비로소 가져옴.
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sourcing_id")
@@ -72,6 +72,14 @@ public class SourcingVariation {
 
     public void setDimensions(Map<String, String> dimensions) {
         this.dimensions = dimensions;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setStock(String stock) {
+        this.stock = stock;
     }
 
 }

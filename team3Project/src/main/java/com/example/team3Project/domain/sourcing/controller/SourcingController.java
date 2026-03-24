@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.team3Project.domain.sourcing.DTO.SourcingDTO;
-import com.example.team3Project.domain.sourcing.entity.Sourcing;
 import com.example.team3Project.domain.sourcing.service.NormalizationService;
 import com.example.team3Project.domain.sourcing.service.SourcingService;
 
@@ -69,10 +68,10 @@ public class SourcingController {
 
     }
     // 테스트용 getMapping
-    @GetMapping("/get-test/{id}")
-    public Sourcing getTest(@PathVariable Long id) {
-        return sourcingService.getSourcingWithVariations(id);
-    }
+    // @GetMapping("/get-test/{id}")
+    // public Sourcing getTest(@PathVariable Long id) {
+    //     return sourcingService.getSourcingWithVariations(id);
+    // }
     
 
 }

@@ -41,6 +41,7 @@ public class TranslationService {
             return new TranslationResult(imageUrl, imageUrl);
         }
 
+        //이미지 저장 경로 가져오기.
         String localImagePath = (String) response.get("local_image_path");
         String resultImagePath = (String) response.get("result_image_path");
 
@@ -49,7 +50,6 @@ public class TranslationService {
             localImagePath != null ? localImagePath : imageUrl,
             resultImagePath != null ? resultImagePath : imageUrl
         );
-
     }
     
         // 텍스트 변환 시작
@@ -68,7 +68,7 @@ public class TranslationService {
             "target_lang", "KO"
         );
         
-        // 보낼 데이터 객체로 만들어서 보낼준비. 
+        // 보낼 데이터를 객체로 만들어서 보낼준비. 
         HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
         // 기존 URL(.../translateImage)을 텍스트 번역용 URL(.../translate_text)로 변경

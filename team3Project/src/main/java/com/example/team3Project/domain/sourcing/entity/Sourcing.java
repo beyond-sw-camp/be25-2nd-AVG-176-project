@@ -52,7 +52,7 @@ public class Sourcing{
     private String resultImageUrl;
 
     // 바로 정규화된 값들 setter로 지정.
-    public void normalize(BigDecimal krwPrice, String translatedTitle, String translatedBrand, String mainImageUrl, String resultImageUrl) {
+    public void normalize(BigDecimal krwPrice,String translatedTitle, String translatedBrand, String mainImageUrl, String resultImageUrl) {
         this.krwPrice = krwPrice;
         this.translatedTitle = translatedTitle;
         this.translatedBrand = translatedBrand;
@@ -64,5 +64,5 @@ public class Sourcing{
     public void setDescriptionImages(List<String> descriptionImages) {
         this.descriptionImages = descriptionImages;
     }
-
+    
 }
