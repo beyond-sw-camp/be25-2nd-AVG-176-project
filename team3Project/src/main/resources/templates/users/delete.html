@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 탈퇴</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        h2 { text-align: center; color: #333; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .warning-title { color: #856404; font-weight: bold; margin-bottom: 10px; }
+        .warning-text { color: #856404; font-size: 14px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #495057; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; }
+        input:focus { border-color: #80bdff; outline: none; }
+        .error { color: #dc3545; font-size: 14px; margin-top: 5px; }
+        .field-error { border-color: #dc3545; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; text-align: center; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; font-size: 16px; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .alert { padding: 12px; background: #f8d7da; color: #721c24; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h2>회원 탈퇴</h2>
+    
+    <div class="warning-box">
+        <div class="warning-title">주의사항</div>
+        <div class="warning-text">
+            회원 탈퇴 시 계정과 관련된 모든 데이터가 삭제되며,<br>
+            이 작업은 되돌릴 수 없습니다.
+        </div>
+    </div>
+    
+    <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
+        에러 메시지
+    </div>
+    
+    <form th:action="@{/users/delete}" th:object="${withdrawRequest}" method="post">
+        <div class="form-group">
+            <label for="password">비밀번호 확인</label>
+            <input type="password" id="password" th:field="*{password}" 
+                   th:class="${#fields.hasErrors('password')} ? 'field-error' : ''" 
+                   placeholder="현재 비밀번호를 입력하세요" required>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                비밀번호 오류
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('정말로 탈퇴하시겠습니까?');">
+                탈퇴하기
+            </button>
+            <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</body>
+</html>

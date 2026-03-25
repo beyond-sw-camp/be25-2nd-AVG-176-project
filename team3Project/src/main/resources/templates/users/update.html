@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>정보 수정</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #495057; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; }
+        input:focus { border-color: #80bdff; outline: none; }
+        .error { color: #dc3545; font-size: 14px; margin-top: 5px; }
+        .field-error { border-color: #dc3545; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; text-align: center; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; font-size: 16px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .alert { padding: 12px; background: #f8d7da; color: #721c24; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h2>정보 수정</h2>
+    
+    <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
+        에러 메시지
+    </div>
+    
+    <form th:action="@{/users/update}" th:object="${userForm}" method="post">
+        <div class="form-group">
+            <label for="nickname">닉네임</label>
+            <input type="text" id="nickname" th:field="*{nickname}" 
+                   th:class="${#fields.hasErrors('nickname')} ? 'field-error' : ''" required>
+            <div class="error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">
+                닉네임 오류
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">이메일</label>
+            <input type="email" id="email" th:field="*{email}" 
+                   th:class="${#fields.hasErrors('email')} ? 'field-error' : ''" required>
+            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                이메일 오류
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">수정 완료</button>
+            <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</body>
+</html>
