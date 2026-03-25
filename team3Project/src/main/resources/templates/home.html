@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>홈</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; text-align: center; }
+        .btn { padding: 10px 20px; margin: 5px; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>환영합니다</h1>
+    <p>로그인 후 이용해주세요.</p>
+    <div>
+        <a th:href="@{/users/login}" class="btn btn-primary">로그인</a>
+        <a th:href="@{/users/signup}" class="btn btn-success">회원가입</a>
+    </div>
+</body>
+</html>
