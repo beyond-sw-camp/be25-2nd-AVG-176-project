@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -57,21 +58,21 @@ public class UserService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             user.increaseLoginFailCount();
-            log.warn("로그인 실패 - 비밀번호 불일치: username={}, 실패횟수={}", 
+            log.warn("로그인 실패 - 비밀번호 불일치: username={}, 실패횟수={}",
                     request.getUsername(), user.getLoginFailCount());
-            
+
             if (user.isLocked()) {
                 log.warn("계정 잠김 처리: username={}", request.getUsername());
                 throw new LoginException(LoginErrorType.ACCOUNT_LOCKED);
             }
-            
+
             throw new LoginException(LoginErrorType.PASSWORD_MISMATCH);
         }
 
         if (user.getLoginFailCount() > 0) {
             user.resetLoginFailCount();
         }
-        
+
         log.info("로그인 성공: username={}", request.getUsername());
         return user;
     }
@@ -97,7 +98,7 @@ public class UserService {
     public void unlockAccount(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
+
         user.unlock();
         log.info("계정 잠김 해제: userId={}", userId);
     }
@@ -153,18 +154,15 @@ public class UserService {
         User user = findUserByLoginIdOrEmail(loginIdOrEmail)
                 .orElseThrow(() -> new LoginException(LoginErrorType.USER_NOT_FOUND));
 
-        // 인증코드 검증
         boolean valid = verificationCodeStore.verifyAndConsume(user.getEmail(), code);
         if (!valid) {
             throw new IllegalArgumentException("유효하지 않거나 만료된 인증코드입니다.");
         }
 
-        // 새 비밀번호 길이 검증
         if (newPassword.length() < 8) {
             throw new IllegalArgumentException("새 비밀번호는 최소 8자 이상이어야 합니다.");
         }
 
-        // 기존 비밀번호와 동일 여부 검증
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
             throw new IllegalArgumentException("새 비밀번호는 기존 비밀번호와 달라야 합니다.");
         }
@@ -182,7 +180,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new LoginException(LoginErrorType.USER_NOT_FOUND));
 
-        // 비밀번호 확인
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
@@ -191,11 +188,38 @@ public class UserService {
         log.info("회원 탈퇴 완료: userId={}", userId);
     }
 
+    public String findUsernameByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보가 없습니다."));
+        return user.getUsername();
+    }
+
+    @Transactional
+    public void resetPassword(String username, String email) {
+        User user = userRepository.findByUsernameAndEmail(username, email)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보가 없습니다."));
+
+        String tempPassword = createTempPassword();
+
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.resetLoginFailCount();
+        if (user.isLocked()) {
+            user.unlock();
+        }
+
+        emailService.sendTemporaryPassword(user.getEmail(), tempPassword);
+        log.info("임시 비밀번호 발급 완료: userId={}, email={}", user.getId(), user.getEmail());
+    }
+
     private Optional<User> findUserByLoginIdOrEmail(String loginIdOrEmail) {
         Optional<User> byUsername = userRepository.findByUsername(loginIdOrEmail);
         if (byUsername.isPresent()) {
             return byUsername;
         }
         return userRepository.findByEmail(loginIdOrEmail);
+    }
+
+    private String createTempPassword() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@Profile("!email")
+@Profile("dev")
 public class ConsoleEmailService implements EmailService {
 
     @Override
@@ -16,6 +16,16 @@ public class ConsoleEmailService implements EmailService {
         log.info("수신자: {}", to);
         log.info("제목: 비밀번호 재설정 인증코드");
         log.info("내용: 인증코드는 [{}] 입니다. (유효시간: 5분)", code);
+        log.info("========================================");
+    }
+
+    @Override
+    public void sendTemporaryPassword(String to, String tempPassword) {
+        log.info("========================================");
+        log.info("[이메일 발송 - 콘솔 모드]");
+        log.info("수신자: {}", to);
+        log.info("제목: 임시 비밀번호 안내");
+        log.info("내용: 임시 비밀번호는 [{}] 입니다. 로그인 후 반드시 변경해주세요.", tempPassword);
         log.info("========================================");
     }
 }

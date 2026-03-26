@@ -4,18 +4,71 @@
     <meta charset="UTF-8">
     <title>홈</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; text-align: center; }
-        .btn { padding: 10px 20px; margin: 5px; text-decoration: none; display: inline-block; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-success { background: #28a745; color: white; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto; text-align: center;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #111;
+        }
+
+        .description {
+            color: #495057;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .back-button-wrap {
+            margin-bottom: 16px;
+        }
+
+        .back-button {
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background-color: #e9ecef;
+            color: #212529;
+        }
+
+        .main-btn {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 14px;
+            padding: 14px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .main-btn:hover {
+            background-color: #e9ecef;
+        }
     </style>
 </head>
 <body>
-    <h1>환영합니다</h1>
-    <p>로그인 후 이용해주세요.</p>
-    <div>
-        <a th:href="@{/users/login}" class="btn btn-primary">로그인</a>
-        <a th:href="@{/users/signup}" class="btn btn-success">회원가입</a>
-    </div>
+<h2>환영합니다</h2>
+<p class="description">로그인 후 이용해주세요.</p>
+
+<a th:href="@{/users/login}" class="main-btn">로그인</a>
+<a th:href="@{/users/signup}" class="main-btn">회원가입</a>
 </body>
 </html>

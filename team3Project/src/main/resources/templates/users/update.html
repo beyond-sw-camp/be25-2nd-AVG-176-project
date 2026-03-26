@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>정보 수정</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
         h2 { text-align: center; color: #333; }
+        .section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #495057; border-bottom: 2px solid #dee2e6; padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #495057; }
         input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; }
@@ -19,38 +21,96 @@
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; }
         .alert { padding: 12px; background: #f8d7da; color: #721c24; border-radius: 4px; margin-bottom: 15px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .back-button-wrap { margin-bottom: 16px; }
+        .back-button { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .back-button:hover { background-color: #e9ecef; color: #212529; }
+        .divider { height: 1px; background: #dee2e6; margin: 30px 0; }
     </style>
 </head>
 <body>
-    <h2>정보 수정</h2>
-    
-    <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
-        에러 메시지
+    <div class="back-button-wrap">
+        <button type="button" class="back-button" onclick="location.href='/'">
+            ← 이전 화면
+        </button>
     </div>
-    
-    <form th:action="@{/users/update}" th:object="${userForm}" method="post">
-        <div class="form-group">
-            <label for="nickname">닉네임</label>
-            <input type="text" id="nickname" th:field="*{nickname}" 
-                   th:class="${#fields.hasErrors('nickname')} ? 'field-error' : ''" required>
-            <div class="error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">
-                닉네임 오류
+    <h2>내 정보 수정</h2>
+
+    <!-- 프로필 정보 수정 섹션 -->
+    <div class="section">
+        <div class="section-title">프로필 정보</div>
+
+        <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
+            에러 메시지
+        </div>
+
+        <form th:action="@{/users/update}" th:object="${userForm}" method="post">
+            <div class="form-group">
+                <label for="nickname">닉네임</label>
+                <input type="text" id="nickname" th:field="*{nickname}"
+                       th:class="${#fields.hasErrors('nickname')} ? 'field-error' : ''" required>
+                <div class="error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">
+                    닉네임 오류
+                </div>
             </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="email">이메일</label>
-            <input type="email" id="email" th:field="*{email}" 
-                   th:class="${#fields.hasErrors('email')} ? 'field-error' : ''" required>
-            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
-                이메일 오류
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" th:field="*{email}"
+                       th:class="${#fields.hasErrors('email')} ? 'field-error' : ''" required>
+                <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                    이메일 오류
+                </div>
             </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">프로필 수정</button>
+                <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 비밀번호 변경 섹션 -->
+    <div class="section">
+        <div class="section-title">비밀번호 변경</div>
+
+        <!-- 성공 메시지 -->
+        <div th:if="${passwordSuccessMessage}" class="alert alert-success" th:text="${passwordSuccessMessage}">
+            비밀번호 변경 성공 메시지
         </div>
-        
-        <div class="btn-group">
-            <button type="submit" class="btn btn-primary">수정 완료</button>
-            <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+
+        <!-- 에러 메시지 -->
+        <div th:if="${passwordErrorMessage}" class="alert" th:text="${passwordErrorMessage}">
+            비밀번호 변경 에러 메시지
         </div>
-    </form>
+
+        <form th:action="@{/users/update/password}" method="post">
+            <div class="form-group">
+                <label for="currentPassword">현재 비밀번호</label>
+                <input type="password" id="currentPassword" name="currentPassword"
+                       th:value="${passwordChangeRequest?.currentPassword}"
+                       th:class="${passwordChangeError} ? 'field-error' : ''" required>
+            </div>
+
+            <div class="form-group">
+                <label for="newPassword">새 비밀번호</label>
+                <input type="password" id="newPassword" name="newPassword"
+                       th:value="${passwordChangeRequest?.newPassword}"
+                       th:class="${passwordChangeError} ? 'field-error' : ''" required
+                       minlength="8" placeholder="최소 8자 이상">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">새 비밀번호 확인</label>
+                <input type="password" id="confirmPassword" name="confirmPassword"
+                       th:value="${passwordChangeRequest?.confirmPassword}"
+                       th:class="${passwordChangeError} ? 'field-error' : ''" required>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">비밀번호 변경</button>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
