@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4c3ba028-ee6b-4691-8ea6-486c65fcd6c7" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/be25-2nd-avg-height-174-project.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/home/HomeController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/dto/LoginRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/dto/SessionUser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/dto/SignupRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/config/WebConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/interceptor/LoginCheckInterceptor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/util/SessionUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/home.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/loginHome.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/signup.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/team3Project/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/team3Project/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;wldusdus63&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/beyond-sw-camp/be25-2nd-avg-height-174-project.git&quot;,
+    &quot;accountId&quot;: &quot;1e384e40-2fcb-4b06-a9f4-98c55a82a3c9&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3B9WuMHc2kLXqR3pOkQi4pwbXJV" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project/team3Project/build.gradle.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "jiyeon",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project",
+    "project.structure.last.edited": "프로젝트",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "editor.preferences.tabs"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="4c3ba028-ee6b-4691-8ea6-486c65fcd6c7" name="변경" comment="" />
+      <created>1773901987449</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773901987449</updated>
+    </task>
+    <servers />
+  </component>
+</project>

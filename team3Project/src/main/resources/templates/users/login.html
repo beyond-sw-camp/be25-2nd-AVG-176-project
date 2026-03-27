@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+
+        .signup-link { text-align: center; margin-top: 15px; }
+        .error-message { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .field-error { color: #dc3545; font-size: 0.9em; margin-top: 5px; }
+        .input-error { border: 1px solid #dc3545; }
+
+        .signup-btn {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 14px;
+            padding: 14px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .signup-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .back-button-wrap { margin-bottom: 16px; }
+
+        .back-button {
+            background-color: #f1f3f5;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background-color: #e9ecef;
+            color: #212529;
+        }
+
+        .sub-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .sub-btn {
+            flex: 1;
+            display: block;
+            box-sizing: border-box;
+            padding: 14px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .sub-btn:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+<div class="back-button-wrap">
+    <button type="button" class="back-button" onclick="location.href='/'">
+        ← 이전 화면
+    </button>
+</div>
+
+<h2>로그인</h2>
+
+<div th:if="${errorType}" class="error-message" th:text="${errorType.message}"></div>
+
+<form th:action="@{/users/login}" th:object="${loginRequest}" method="post">
+    <input type="hidden" name="redirectURL" th:value="${redirectURL}">
+
+    <div class="form-group">
+        <label for="username">아이디</label>
+        <input type="text" id="username" th:field="*{username}"
+               th:classappend="${errorType?.name() == 'USERNAME_NOT_FOUND'} ? 'input-error' : ''"
+               required>
+        <div th:if="${errorType?.name() == 'USERNAME_NOT_FOUND'}" class="field-error" th:text="${errorType.message}"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" th:field="*{password}"
+               th:classappend="${errorType?.name() == 'PASSWORD_MISMATCH'} ? 'input-error' : ''"
+               required>
+        <div th:if="${errorType?.name() == 'PASSWORD_MISMATCH'}" class="field-error" th:text="${errorType.message}"></div>
+    </div>
+
+    <button type="submit" class="signup-btn">확인</button>
+</form>
+
+<div class="signup-link">
+    <a th:href="@{/users/signup}" class="signup-btn">회원가입</a>
+</div>
+
+<div class="sub-btn-group">
+    <a th:href="@{/users/find-id}" class="sub-btn">아이디 찾기</a>
+    <a th:href="@{/users/reset-pw}" class="sub-btn">비밀번호 찾기</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 정보</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        h2 { text-align: center; color: #333; }
+        .info-card { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+        .info-row:last-child { border-bottom: none; }
+        .label { font-weight: bold; color: #495057; }
+        .value { color: #212529; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; text-align: center; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .back-button-wrap { margin-bottom: 16px; }
+        .back-button { background-color: #f1f3f5;  color: #495057; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .back-button:hover { background-color: #e9ecef; color: #212529; }
+    </style>
+</head>
+<body>
+    <div class="back-button-wrap">
+        <button type="button" class="back-button" onclick="location.href='/'">
+            ← 이전 화면
+        </button>
+    </div>
+
+    <h2>내 정보</h2>
+    
+    <div class="info-card">
+        <div class="info-row">
+            <span class="label">로그인 ID</span>
+            <span class="value" th:text="${user.loginId}">loginId</span>
+        </div>
+        <div class="info-row">
+            <span class="label">사용자명</span>
+            <span class="value" th:text="${user.username}">username</span>
+        </div>
+        <div class="info-row">
+            <span class="label">닉네임</span>
+            <span class="value" th:text="${user.nickname}">nickname</span>
+        </div>
+        <div class="info-row">
+            <span class="label">이메일</span>
+            <span class="value" th:text="${user.email}">email</span>
+        </div>
+    </div>
+    
+    <div class="btn-group">
+        <a th:href="@{/users/update}" class="btn btn-primary">정보 수정</a>
+        <a th:href="@{/users/delete}" class="btn btn-danger">회원 탈퇴</a>
+    </div>
+    
+    <div class="btn-group" style="margin-top: 10px;">
+        <form th:action="@{/users/logout}" method="post" style="flex: 1;">
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">로그아웃</button>
+        </form>
+    </div>
+</body>
+</html>
