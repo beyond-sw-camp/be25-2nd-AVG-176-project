@@ -24,7 +24,7 @@ public class SourcingPageController {
     @GetMapping("/auto")
     public String autoSourcingForm() {
         return "sourcing-test/sourcing-form";
-    }
+    } 
 
     @PostMapping("/auto")
     @ResponseBody

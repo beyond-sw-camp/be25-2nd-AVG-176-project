@@ -31,7 +31,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/login")
-    public String loginForm(@RequestParam(defaultValue = "/") String redirectURL,
+    public String loginForm(@RequestParam(name = "redirectURL", defaultValue = "/") String redirectURL,
                             Model model) {
         if (!model.containsAttribute("loginRequest")) {
             model.addAttribute("loginRequest", new LoginRequest());
@@ -43,7 +43,7 @@ public class UserController {
     @PostMapping("/login")
     public String login(@Valid @ModelAttribute LoginRequest loginRequest,
                         BindingResult bindingResult,
-                        @RequestParam(defaultValue = "/") String redirectURL,
+                        @RequestParam(name = "redirectURL", defaultValue = "/") String redirectURL,
                         HttpServletRequest request,
                         Model model) {
 
