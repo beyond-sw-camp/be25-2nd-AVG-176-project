@@ -25,16 +25,17 @@ public class SourcingPageController {
     public String autoSourcingForm() {
         return "sourcing-test/sourcing-form";
     } 
-
+    
+    // 소싱 버튼 누르면 소싱 시작.
     @PostMapping("/auto")
     @ResponseBody
-    public ResponseEntity<Object> autoSourcing(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Object> autoSourcing(@RequestBody Map<String, Object> body) { // 키워드랑 금지어를 전달 받음.
         // Python FastAPI로 그대로 전달하고 응답을 그대로 반환
         ResponseEntity<Object> response = restTemplate.postForEntity(
-                sourcingApiUrl,
-                body,
+                sourcingApiUrl, // 파이썬 서버 엔드포인트 주소 
+                body, // 금지어들 및 키워드
                 Object.class
         );
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody()); // 파이썬 서버에서의 응답 코드랑 그에 대한 소싱 결과들.
     }
 }

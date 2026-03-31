@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.example.team3Project.domain.sourcing.entity.Sourcing;
+import com.example.team3Project.domain.sourcing.entity.SourcingRegistrationStatus;
 import com.example.team3Project.domain.sourcing.entity.SourcingVariation;
 import com.example.team3Project.domain.sourcing.repository.SourcingRepository;
 import com.example.team3Project.domain.sourcing.repository.SourcingVariationRepository;
@@ -147,6 +148,9 @@ public class NormalizationService {
                 sourcingVariationRepository.save(variation);
             }
         }
+
+        sourcing.setRegistrationStatus(SourcingRegistrationStatus.NORMALIZED);
+        sourcingRepository.save(sourcing);
     }
 
 }

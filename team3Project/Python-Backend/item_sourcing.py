@@ -6,8 +6,8 @@ import google.generativeai as genai
 import json
 import time
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
 load_dotenv()
 
@@ -18,23 +18,36 @@ GEMINI_API_KEY = os.getenv("NANOBANANA_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-3-flash-preview')
 
-AUTH = aiohttp.BasicAuth('calendar_CjSKG', 'DBy6x9xqL_Hv')
+OXYLABS_API_KEY = os.getenv("OXYLABS_API_KEY")
+OXYLABS_API_KEY2 = os.getenv("OXYLABS_API_KEY2")
+AUTH = aiohttp.BasicAuth(OXYLABS_API_KEY, OXYLABS_API_KEY2)
 API_URL = 'https://realtime.oxylabs.io/v1/queries'
 
 # Oxylabs 동시 요청 최대 3개 제한
 semaphore = asyncio.Semaphore(3)
 
-
-def get_gemini_query(season: str, banned_words: List[str] = None) -> str:
+# 프롬프트 생성. 어떻게 사진을 제대로 만들건지를 나타내는 프롬프트 만들기.
+def get_gemini_query(
+    season: str,
+    banned_words: Optional[List[str]] = None,
+    exclude_keywords: Optional[List[str]] = None,
+) -> str:
     """Gemini로 계절에 맞는 아마존 검색 키워드 생성"""
     banned_section = ""
     if banned_words:
         banned_section = f"\n        다음 단어들은 절대 포함하지 마: {', '.join(banned_words)}"
 
+    exclude_section = ""
+    if exclude_keywords:
+        exclude_section = (
+            f"\n        아래에 나온 키워드/상품명과는 다른 종류의 상품만 추천해. (동일하거나 거의 같은 의미면 안 됨):\n        "
+            + ", ".join(exclude_keywords)
+        )
+
     prompt = f"""
         내가 계절성을 알려줄테니 내가 미국 아마존에서 가져와서 사용할 물건의 이름을 영어로 알려줘.
         무조건 이름만 알려주면 되는거야.이것들은 그리고 금지어니까 이거 들어간 키워드는 넣지마:{banned_section}
-        상품은 하나만 가져와.
+        상품은 하나만 가져와.{exclude_section}
 
         계절성: {season}
         """
@@ -108,25 +121,34 @@ async def get_variation_detail(session: aiohttp.ClientSession, var: dict) -> dic
 
 
 async def source_one_item(session: aiohttp.ClientSession, keyword: str) -> dict:
-    """키워드 하나에 대한 전체 소싱 파이프라인"""
+    """키워드 하나에 대한 전체 소싱 파이프라인 (test.json과 동일한 필드 구조로 병합)."""
     print(f"\n[시작] {keyword}")
 
     # 1, 2단계는 순차 실행 (ASIN이 있어야 상세 조회 가능)
     first_item, asin = await search_asin(session, keyword)
     product_content = await get_product_detail(session, asin)
 
-    first_item['images'] = product_content.get('images', [])
-    variations = product_content.get('variation', [])
+    # 검색 organic + amazon_product 상세를 합쳐 test.json 예시와 같은 키 세트를 갖춤
+    merged = dict(first_item)
+    for k, v in product_content.items():
+        if k == 'variation':
+            continue
+        if v is not None:
+            merged[k] = v
+    merged['images'] = product_content.get('images') or merged.get('images', [])
+    variations = product_content.get('variation') or []
 
     # 3단계: variation은 asyncio.gather로 병렬 처리
     if variations:
         detailed_variations = await asyncio.gather(*[
             get_variation_detail(session, var) for var in variations
         ])
-        first_item['variation'] = list(detailed_variations)
+        merged['variation'] = list(detailed_variations)
+    else:
+        merged['variation'] = []
 
     print(f"[완료] {keyword}")
-    return first_item
+    return merged
 
 
 
@@ -136,14 +158,25 @@ async def source_one_item(session: aiohttp.ClientSession, keyword: str) -> dict:
 class SourcingRequest(BaseModel):
     seasons: List[str]
     banned_words: List[str] = []
+    # 계절성 태그 하나당 가져올 상품(키워드) 개수
+    item_count: int = Field(default=1, ge=1, le=10)
 
-
+# 요청시 소싱 시작.
 @router.post("/sourcing")
 async def run_sourcing(req: SourcingRequest):
-    print(f"[FastAPI] 소싱 요청 - 계절성: {req.seasons}, 금지어: {req.banned_words}")
+    print(
+        f"[FastAPI] 소싱 요청 - 계절성: {req.seasons}, 금지어: {req.banned_words}, "
+        f"시즌당 상품 수: {req.item_count}"
+    )
     print("Gemini 키워드 생성 중...")
 
-    keywords = [get_gemini_query(season, req.banned_words) for season in req.seasons]
+    keywords: List[str] = []
+    for season in req.seasons:
+        used_for_season: List[str] = []
+        for _ in range(req.item_count):
+            kw = get_gemini_query(season, req.banned_words, used_for_season or None)
+            keywords.append(kw)
+            used_for_season.append(kw)
     print(f"추천 키워드: {keywords}")
 
     start = time.time()
@@ -155,11 +188,15 @@ async def run_sourcing(req: SourcingRequest):
     elapsed = time.time() - start
     print(f"=== 총 처리 시간: {elapsed:.1f}초 ===")
 
+    result_list = list(results)
     return {
         "status": "success",
         "keywords": keywords,
+        "item_count": req.item_count,
         "elapsed": round(elapsed, 1),
-        "results": list(results)
+        "results": result_list,
+        # test.json과 동일한 객체 배열을 문자열로도 제공 (클라이언트/저장용)
+        "results_json": json.dumps(result_list, ensure_ascii=False, indent=2),
     }
 
 

@@ -33,7 +33,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/users/logout",
                         "/users/find-id",
                         "/users/reset-pw",
-                        "/sourcing/auto",
                         "/css/**",
                         "/js/**",
                         "/images/**",

@@ -119,6 +119,56 @@
         .result-card .product-asin { color: #888; font-size: 0.82rem; margin-bottom: 8px; }
         .result-card .product-price { color: #2d6a4f; font-weight: 600; }
 
+        .json-block {
+            margin-top: 12px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .json-block summary {
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4361ee;
+            user-select: none;
+        }
+        .json-block summary:hover { text-decoration: underline; }
+        .json-block pre {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            overflow-x: auto;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .full-json-wrap {
+            margin-top: 20px;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .full-json-wrap summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+        }
+        .full-json-wrap pre {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            line-height: 1.45;
+            overflow: auto;
+            max-height: 560px;
+        }
+
         #loading {
             display: none;
             text-align: center;
@@ -147,6 +197,64 @@
             font-size: 0.9rem;
             display: none;
         }
+
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .btn-save, .btn-save-all {
+            padding: 8px 16px;
+            background: #2d6a4f;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save-all { font-size: 0.92rem; padding: 10px 18px; }
+        .btn-save:hover, .btn-save-all:hover { background: #1b4332; }
+        .btn-save:disabled, .btn-save-all:disabled { background: #95d5b2; cursor: not-allowed; }
+        .btn-save { margin-top: 10px; }
+        .save-msg { font-size: 0.82rem; margin-top: 6px; min-height: 1.2em; }
+        .save-msg.ok { color: #2d6a4f; font-weight: 600; }
+        .save-msg.err { color: #e63946; }
+        #save-summary {
+            display: none;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            font-size: 0.88rem;
+            color: #14532d;
+        }
+        #save-summary.has-errors { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+
+        .radio-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 20px;
+            align-items: center;
+        }
+        .radio-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .radio-row input[type="radio"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            accent-color: #4361ee;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -174,6 +282,17 @@
         <div class="tags" id="banned-tags"></div>
     </div>
 
+    <!-- 시즌당 가져올 상품 수 -->
+    <div class="section">
+        <label>가져올 상품 수 (계절성 태그당)</label>
+        <div class="radio-row" id="item-count-row">
+            <label><input type="radio" name="item-count" value="1" checked /> 1개</label>
+            <label><input type="radio" name="item-count" value="2" /> 2개</label>
+            <label><input type="radio" name="item-count" value="3" /> 3개</label>
+            <label><input type="radio" name="item-count" value="5" /> 5개</label>
+        </div>
+    </div>
+   
     <button class="btn-submit" id="btn-submit" type="button" onclick="submitSourcing()">소싱 시작</button>
 
     <div id="loading"><span class="spinner"></span>소싱 진행 중... (시간이 걸릴 수 있습니다)</div>
@@ -183,13 +302,24 @@
     <div id="result-area">
         <h2>소싱 결과</h2>
         <div class="result-meta" id="result-meta"></div>
+        <div id="save-summary"></div>
+        <div class="result-actions" id="result-actions" style="display: none;">
+            <button type="button" class="btn-save-all" id="btn-save-all">전체 DB 저장</button>
+        </div>
         <div class="result-items" id="result-items"></div>
+        <div class="full-json-wrap" id="full-json-wrap" style="display: none;">
+            <details>
+                <summary>전체 소싱 결과 JSON (test.json 형태 배열)</summary>
+                <pre id="full-json-pre"></pre>
+            </details>
+        </div>
     </div>
 </div>
 
 <script>
     const seasons = [];
     const bannedWords = [];
+    let lastResults = [];
 
     function addTag(type) {
         const inputId = type === 'season' ? 'season-input' : 'banned-input';
@@ -234,17 +364,24 @@
         setLoading(true);
 
         try {
+            const itemCountEl = document.querySelector('input[name="item-count"]:checked');
+            const item_count = itemCountEl ? parseInt(itemCountEl.value, 10) : 1;
             const resp = await fetch('/sourcing/auto', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ seasons, banned_words: bannedWords })
+                body: JSON.stringify({
+                    seasons,
+                    banned_words: bannedWords,
+                    item_count
+                }),
+                credentials: 'include'
             });
 
             if (!resp.ok) {
                 const err = await resp.text();
                 throw new Error(err || '서버 오류가 발생했습니다.');
             }
-
+            // 파이썬 서버에서의 응답 코드랑 그에 대한 소싱 결과들.
             const data = await resp.json();
             renderResult(data);
         } catch (e) {
@@ -254,24 +391,182 @@
         }
     }
 
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /** Spring SourcingDTO(@JsonProperty)에 맞게 보정: url_image 누락 시 images[0] 사용 */
+    function normalizeProductForDb(item) {
+        const o = JSON.parse(JSON.stringify(item));
+        if (!o.url_image && Array.isArray(o.images) && o.images.length > 0) {
+            // 메인 썸네일 없을떄 첫번째 이미지를 메인 썸네일로 설정.
+            o.url_image = o.images[0];
+        }
+        return o;
+    }
+    // 파싱후 데이터가 잘 들어왔는지 확인하기.
+    async function postSourcingUpload(payload) {
+        const resp = await fetch('/sourcing/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            credentials: 'include',
+        });
+        const text = await resp.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            throw new Error(text || resp.statusText || '응답 파싱 실패');
+        }
+        if (!resp.ok) {
+            throw new Error(data.message || text || resp.statusText);
+        }
+        return data;
+    }
+    // 정규화 후 DB에 저장하는 함수.
+    async function saveOneToDb(item, statusEl, btnEl) {
+        btnEl.disabled = true;
+        statusEl.textContent = '저장 중...';
+        statusEl.className = 'save-msg';
+        try {
+            const r = await postSourcingUpload(normalizeProductForDb(item));
+            if (r.normalized) {
+                statusEl.textContent = 'DB 저장·정규화 완료 (상품 등록 가능)' + (r.sourcingId != null ? ` · id ${r.sourcingId}` : '');
+                statusEl.className = 'save-msg ok';
+            } else if (r.status === 'saved_normalization_failed') {
+                statusEl.textContent = '저장됨, 정규화 실패: ' + (r.normalizationError || r.message || '') + (r.sourcingId != null ? ` · id ${r.sourcingId}` : '');
+                statusEl.className = 'save-msg err';
+            } else {
+                statusEl.textContent = (r.errors || [r.message || '검증 실패']).join(' · ');
+                statusEl.className = 'save-msg err';
+            }
+        } catch (e) {
+            statusEl.textContent = e.message;
+            statusEl.className = 'save-msg err';
+        }
+        btnEl.disabled = false;
+    }
+// 전체 데이터를 DB에 저장하는 함수.
+    async function saveAllToDb() {
+        const btn = document.getElementById('btn-save-all');
+        const summaryEl = document.getElementById('save-summary');
+        if (!lastResults.length) return;
+
+        btn.disabled = true;
+        summaryEl.style.display = 'none';
+
+        let ok = 0;
+        const fail = [];
+
+        for (const item of lastResults) {
+            try {
+                const r = await postSourcingUpload(normalizeProductForDb(item));
+                if (r.normalized) ok++;
+                else if (r.status === 'saved_normalization_failed') {
+                    fail.push({ asin: item.asin || '-', msg: '정규화 실패: ' + (r.normalizationError || r.message || '') });
+                } else {
+                    fail.push({ asin: item.asin || '-', msg: (r.errors || [r.message || '검증 실패']).join(' · ') });
+                }
+            } catch (e) {
+                fail.push({ asin: item.asin || '-', msg: e.message });
+            }
+        }
+
+        summaryEl.className = fail.length ? 'has-errors' : '';
+        summaryEl.style.display = 'block';
+        summaryEl.innerHTML =
+            `<strong>일괄 저장·정규화 결과:</strong> 성공 ${ok}건` +
+            (fail.length ? `, 실패 ${fail.length}건<br><ul style="margin:8px 0 0 18px;">${fail.map(f => `<li>${escapeHtml(f.asin)} — ${escapeHtml(f.msg)}</li>`).join('')}</ul>` : '');
+
+        btn.disabled = false;
+    }
+    // 소싱 결과값들 화면에 렌더링하는 함수.
     function renderResult(data) {
         const metaEl = document.getElementById('result-meta');
         const itemsEl = document.getElementById('result-items');
+        const actionsEl = document.getElementById('result-actions');
+        const summaryEl = document.getElementById('save-summary');
 
-        metaEl.innerHTML = `추천 키워드: <span>${data.keywords.join(', ')}</span> &nbsp;|&nbsp; 처리 시간: <span>${data.elapsed}초</span>`;
+        lastResults = data.results || [];
+        summaryEl.style.display = 'none';
+        summaryEl.textContent = '';
+        summaryEl.className = '';
+
+        const perSeason = data.item_count != null ? `시즌당 <span>${data.item_count}</span>개 · ` : '';
+        metaEl.innerHTML =
+            `${perSeason}추천 키워드: <span>${(data.keywords || []).join(', ')}</span> &nbsp;|&nbsp; 처리 시간: <span>${data.elapsed ?? '-'}초</span>`;
+
+        actionsEl.style.display = lastResults.length ? 'flex' : 'none';
+        const saveAllBtn = document.getElementById('btn-save-all');
+        saveAllBtn.replaceWith(saveAllBtn.cloneNode(true));
+        document.getElementById('btn-save-all').addEventListener('click', saveAllToDb);
 
         itemsEl.innerHTML = '';
-        (data.results || []).forEach(item => {
+        lastResults.forEach(item => {
             const price = item.price ? `$${item.price}` : '가격 없음';
+            const safeJson = JSON.stringify(item, null, 2)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
             const card = document.createElement('div');
             card.className = 'result-card';
-            card.innerHTML = `
-                <div class="product-title">${item.title || '제목 없음'}</div>
-                <div class="product-asin">ASIN: ${item.asin || '-'}</div>
-                <div class="product-price">${price}</div>
+
+            const title = document.createElement('div');
+            title.className = 'product-title';
+            title.textContent = item.title || '제목 없음';
+
+            const asinRow = document.createElement('div');
+            asinRow.className = 'product-asin';
+            asinRow.textContent = 'ASIN: ' + (item.asin || '-');
+
+            const priceRow = document.createElement('div');
+            priceRow.className = 'product-price';
+            priceRow.textContent = price;
+
+            const btnSave = document.createElement('button');
+            btnSave.type = 'button';
+            btnSave.className = 'btn-save';
+            btnSave.textContent = '이 상품 DB 저장';
+
+            const statusEl = document.createElement('div');
+            statusEl.className = 'save-msg';
+
+            btnSave.addEventListener('click', () => saveOneToDb(item, statusEl, btnSave));
+
+            const jsonBlock = document.createElement('div');
+            jsonBlock.className = 'json-block';
+            jsonBlock.innerHTML = `
+                <details>
+                    <summary>소싱 데이터 JSON (test.json 형식)</summary>
+                    <pre>${safeJson}</pre>
+                </details>
             `;
+
+            card.appendChild(title);
+            card.appendChild(asinRow);
+            card.appendChild(priceRow);
+            card.appendChild(btnSave);
+            card.appendChild(statusEl);
+            card.appendChild(jsonBlock);
             itemsEl.appendChild(card);
         });
+
+        const fullWrap = document.getElementById('full-json-wrap');
+        const fullPre = document.getElementById('full-json-pre');
+        if (data.results_json) {
+            fullPre.textContent = data.results_json;
+            fullWrap.style.display = 'block';
+        } else {
+            fullPre.textContent = JSON.stringify(data.results || [], null, 2);
+            fullWrap.style.display = 'block';
+        }
 
         document.getElementById('result-area').style.display = 'block';
     }

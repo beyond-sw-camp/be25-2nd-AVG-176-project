@@ -3,13 +3,20 @@ package com.example.team3Project.domain.sourcing.entity;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.example.team3Project.domain.user.User;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +33,16 @@ public class Sourcing{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
+
+    /** 소싱을 등록한 회원 (동일 ASIN도 사용자별로 각각 보유 가능) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 40)
+    @Builder.Default
+    private SourcingRegistrationStatus registrationStatus = SourcingRegistrationStatus.PENDING_NORMALIZATION;
     
     @Column(length = 2048)
     private String sourceUrl;
@@ -63,6 +80,10 @@ public class Sourcing{
     //상세 이미지 리스트 수정할수 있게 setter 지정
     public void setDescriptionImages(List<String> descriptionImages) {
         this.descriptionImages = descriptionImages;
+    }
+
+    public void setRegistrationStatus(SourcingRegistrationStatus registrationStatus) {
+        this.registrationStatus = registrationStatus;
     }
     
 }
