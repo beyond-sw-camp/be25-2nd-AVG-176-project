@@ -13,7 +13,6 @@ import com.example.team3Project.domain.sourcing.entity.SourcingRegistrationStatu
 import com.example.team3Project.domain.sourcing.entity.SourcingVariation;
 import com.example.team3Project.domain.sourcing.repository.SourcingRepository;
 import com.example.team3Project.domain.sourcing.repository.SourcingVariationRepository;
-import com.example.team3Project.domain.user.User;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +26,10 @@ public class SourcingService {
     private final NormalizationService normalizationService;
 
     // 일단 json 파일이 제대로 원하는 값들이 있는지 확인. 즉, 검증하기
-    public List<String> validateSourcingData(SourcingDTO sourcingDTO, User owner) {
+    public List<String> validateSourcingData(SourcingDTO sourcingDTO, Long userId) {
         List<String> errors = new ArrayList<>();
 
-        if (owner == null || owner.getId() == null) {
+        if (userId == null) {
             errors.add("로그인이 필요합니다.");
             return errors;
         }
@@ -44,7 +43,7 @@ public class SourcingService {
         if (!StringUtils.hasText(sourcingDTO.getAsin())) {
             errors.add("asin(productId)이 누락 되었습니다.");
         }
-        else if (sourcingRepository.existsByProductIdAndUser_Id(sourcingDTO.getAsin(), owner.getId())) {
+        else if (sourcingRepository.existsByProductIdAndUserId(sourcingDTO.getAsin(), userId)) {
             errors.add("이미 내 계정에 등록된 상품입니다.");
         }
         
@@ -91,8 +90,8 @@ public class SourcingService {
     // }
 
     @Transactional
-    public Long saveSourcingData(SourcingDTO sourcingDTO, User owner) {
-        if (owner == null || owner.getId() == null) {
+    public Long saveSourcingData(SourcingDTO sourcingDTO, Long userId) {
+        if (userId == null) {
             throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
         }
 
@@ -111,7 +110,7 @@ public class SourcingService {
 
         // 소싱 데이터 저장.
         Sourcing sourcing = Sourcing.builder()
-                .user(owner)
+                .userId(userId)
                 .sourceUrl(fullAmazonUrl)
                 .siteName("Amazon")
                 .productId(sourcingDTO.getAsin())
@@ -152,8 +151,8 @@ public class SourcingService {
     // * 정규화 실패 시에도 소싱 행은 유지하고 {@link SourcingRegistrationStatus#NORMALIZATION_FAILED}로 표시한다.
      
     @Transactional
-    public SourcingPersistOutcome saveSourcingDataAndNormalize(SourcingDTO sourcingDTO, User owner) {
-        Long id = saveSourcingData(sourcingDTO, owner);
+    public SourcingPersistOutcome saveSourcingDataAndNormalize(SourcingDTO sourcingDTO, Long userId) {
+        Long id = saveSourcingData(sourcingDTO, userId);
         try {
             normalizationService.normalize(id);
         } catch (RuntimeException ex) {

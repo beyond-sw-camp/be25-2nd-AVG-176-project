@@ -3,20 +3,15 @@ package com.example.team3Project.domain.sourcing.entity;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.example.team3Project.domain.user.User;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,10 +29,9 @@ public class Sourcing{
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    /** 소싱을 등록한 회원 (동일 ASIN도 사용자별로 각각 보유 가능) */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    /** 소싱을 등록한 회원 PK (USER-SERVICE users 테이블과 동일 스키마 가정) */
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 40)

@@ -12,7 +12,7 @@ public interface SourcingRepository extends JpaRepository<Sourcing, Long>{
 
     boolean existsByProductId(String productId);
 
-    boolean existsByProductIdAndUser_Id(String productId, Long userId);
+    boolean existsByProductIdAndUserId(String productId, Long userId);
 
     Optional<Sourcing> findByProductId(String productId);
 

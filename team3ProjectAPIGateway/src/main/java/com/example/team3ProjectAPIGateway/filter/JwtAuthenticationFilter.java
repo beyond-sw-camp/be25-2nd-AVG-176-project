@@ -6,6 +6,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -19,15 +20,17 @@ import java.util.List;
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
-    //여기는 검증 안해도 되는 경로.
     private static final String VIA_GATEWAY_HEADER = "X-Via-Api-Gateway";
     private static final String VIA_GATEWAY_VALUE = "true";
 
+    /**
+     * JWT 없이 통과시킬 경로 (게이트웨이는 막지 않음). 인증은 각 백엔드(세션/JWT)가 담당.
+     * - /users/** : USER-SERVICE Thymeleaf·폼 (로그인 후 /users/update, /users/me 등) — 복수 users
+     * - /sourcing/** GET·HEAD·OPTIONS : 폼 HTML만 (POST 는 X-User-Id 위해 게이트웨이에서 JWT 필요)
+     * - /user/**  : 아래 목록 제외 시 게이트웨이에서 Bearer JWT 필수 — 단수 user (REST)
+     */
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/auth/login",
-            "/auth/signup",
-            "/auth/find-id",
-            "/auth/reset-pw",
+            "/loginHome",
             "/user/gateway-check"
     );
     // JWTUtil -> 검증용 키를 만들고 파싱하는 역할을 함.
@@ -38,10 +41,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     // 모든 요청들은 여기로 들어옴. exchage = 모든 요청, 응답을 가지고 있음. chain = 다음 필터 또는 서비스로 이동함.
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getURI().getPath(); // 요청 경로를 가져옴.
-        // 여기는 검증 안해도 되는 경로.
-        if (isPublicPath(path)) {
+        String path = exchange.getRequest().getURI().getPath();
+        HttpMethod method = exchange.getRequest().getMethod();
+        if (isPublicPath(path, method)) {
+            // 브라우저가 남긴 Bearer(만료/잘못된 토큰)이 그대로 넘어가면 USER-SERVICE OAuth2/Security 가 401 을 낼 수 있음
             ServerHttpRequest publicReq = exchange.getRequest().mutate()
+                    .headers(h -> h.remove(HttpHeaders.AUTHORIZATION))
                     .header(VIA_GATEWAY_HEADER, VIA_GATEWAY_VALUE)
                     .build();
             return chain.filter(exchange.mutate().request(publicReq).build());
@@ -74,9 +79,21 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
     
-    //공개 경로 체크 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith); // 맞으면 True 반환. 아니면 False 반환.
+    private boolean isPublicPath(String path, HttpMethod method) {
+        if ("/".equals(path)) {
+            return true;
+        }
+        if (path.startsWith("/users/") || "/users".equals(path)) {
+            return true;
+        }
+        if (path.startsWith("/sourcing/") && isSourcingReadOrCors(method)) {
+            return true;
+        }
+        return PUBLIC_PATHS.stream().anyMatch(prefix -> path.startsWith(prefix));
+    }
+
+    private static boolean isSourcingReadOrCors(HttpMethod method) {
+        return method == HttpMethod.GET || method == HttpMethod.HEAD || method == HttpMethod.OPTIONS;
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) { // 권한 없음. 401 응답 반환.
