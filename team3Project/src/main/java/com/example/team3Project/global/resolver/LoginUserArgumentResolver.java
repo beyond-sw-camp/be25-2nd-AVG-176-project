@@ -2,9 +2,8 @@ package com.example.team3Project.global.resolver;
 
 import com.example.team3Project.domain.user.User;
 import com.example.team3Project.domain.user.UserService;
-import com.example.team3Project.domain.user.dto.SessionUser;
 import com.example.team3Project.global.annotation.LoginUser;
-import com.example.team3Project.global.util.SessionUtils;
+import com.example.team3Project.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +19,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
 
+    private final JwtUtil jwtUtil;
     private final UserService userService;
 
     @Override
@@ -35,12 +35,20 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
                                   NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) {
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
-        SessionUser sessionUser = SessionUtils.getLoginUser(request);
 
-        if (sessionUser == null) {
+        // JWT 토큰 추출 (Cookie 또는 Header)
+        String token = jwtUtil.resolveToken(request);
+
+        if (token == null || !jwtUtil.validateToken(token)) {
+            log.debug("JWT 토큰이 없거나 유효하지 않습니다");
             return null;
         }
 
-        return userService.findById(sessionUser.getId()).orElse(null);
+        Long userId = jwtUtil.getUserId(token);
+        if (userId == null) {
+            return null;
+        }
+
+        return userService.findById(userId).orElse(null);
     }
 }

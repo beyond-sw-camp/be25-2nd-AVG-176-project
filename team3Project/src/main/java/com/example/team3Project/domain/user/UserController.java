@@ -1,18 +1,18 @@
 package com.example.team3Project.domain.user;
 
-import com.example.team3Project.domain.user.dto.PasswordChangeRequest;
 import com.example.team3Project.domain.user.dto.LoginRequest;
-import com.example.team3Project.domain.user.dto.SessionUser;
+import com.example.team3Project.domain.user.dto.PasswordChangeRequest;
 import com.example.team3Project.domain.user.dto.SignupRequest;
 import com.example.team3Project.domain.user.dto.UserUpdateFormRequest;
 import com.example.team3Project.domain.user.dto.UserWithdrawRequest;
 import com.example.team3Project.global.annotation.LoginUser;
 import com.example.team3Project.global.exception.LoginException;
-import com.example.team3Project.global.util.SessionUtils;
-import jakarta.servlet.http.HttpServletRequest;
+import com.example.team3Project.global.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping("/login")
     public String loginForm(@RequestParam(defaultValue = "/") String redirectURL,
@@ -44,7 +45,7 @@ public class UserController {
     public String login(@Valid @ModelAttribute LoginRequest loginRequest,
                         BindingResult bindingResult,
                         @RequestParam(defaultValue = "/") String redirectURL,
-                        HttpServletRequest request,
+                        HttpServletResponse response,
                         Model model) {
 
         if (bindingResult.hasErrors()) {
@@ -54,14 +55,15 @@ public class UserController {
 
         try {
             User loginUser = userService.login(loginRequest);
-            SessionUtils.setLoginUser(
-                    request,
-                    new SessionUser(
-                            loginUser.getId(),
-                            loginUser.getUsername(),
-                            loginUser.getNickname()
-                    )
+
+            // JWT 토큰 생성 및 HttpOnly Cookie 설정
+            String token = jwtUtil.generateToken(
+                    loginUser.getId(),
+                    loginUser.getUsername(),
+                    loginUser.getNickname()
             );
+            ResponseCookie cookie = jwtUtil.createJwtCookie(token);
+            response.addHeader("Set-Cookie", cookie.toString());
 
             log.info("로그인 성공: userId={}, redirectURL={}", loginUser.getId(), redirectURL);
             return "redirect:" + redirectURL;
@@ -101,8 +103,10 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        SessionUtils.invalidateSession(request);
+    public String logout(HttpServletResponse response) {
+        // JWT 쿠키 삭제
+        ResponseCookie deleteCookie = jwtUtil.deleteJwtCookie();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
         log.info("로그아웃 완료");
         return "redirect:/users/login";
     }
@@ -137,7 +141,7 @@ public class UserController {
     public String update(@LoginUser User user,
                          @Valid @ModelAttribute("userForm") UserUpdateFormRequest formRequest,
                          BindingResult bindingResult,
-                         HttpServletRequest request,
+                         HttpServletResponse response,
                          Model model) {
         if (user == null) {
             return "redirect:/users/login";
@@ -148,11 +152,16 @@ public class UserController {
         }
 
         try {
-            User updatedUser = userService.updateUserInfo(user.getId(), formRequest);  // 수정
+            User updatedUser = userService.updateUserInfo(user.getId(), formRequest);
 
-            // 세션 갱신 (닉네임 변경 즉시 반영)
-            SessionUtils.setLoginUser(request,
-                    new SessionUser(updatedUser.getId(), updatedUser.getUsername(), updatedUser.getNickname()));  // 추가
+            // JWT 쿠키 갱신 (닉네임 변경 즉시 반영)
+            String token = jwtUtil.generateToken(
+                    updatedUser.getId(),
+                    updatedUser.getUsername(),
+                    updatedUser.getNickname()
+            );
+            ResponseCookie cookie = jwtUtil.createJwtCookie(token);
+            response.addHeader("Set-Cookie", cookie.toString());
 
             log.info("사용자 정보 수정 성공: userId={}", user.getId());
             return "redirect:/users/me";
@@ -175,7 +184,7 @@ public class UserController {
     public String delete(@LoginUser User user,
                          @Valid @ModelAttribute("withdrawRequest") UserWithdrawRequest withdrawRequest,
                          BindingResult bindingResult,
-                         HttpServletRequest request,
+                         HttpServletResponse response,
                          Model model) {
         if (user == null) {
             return "redirect:/users/login";
@@ -187,7 +196,11 @@ public class UserController {
 
         try {
             userService.deleteUser(user.getId(), withdrawRequest.getPassword());
-            SessionUtils.invalidateSession(request);
+
+            // JWT 쿠키 삭제
+            ResponseCookie deleteCookie = jwtUtil.deleteJwtCookie();
+            response.addHeader("Set-Cookie", deleteCookie.toString());
+
             log.info("회원 탈퇴 완료: userId={}", user.getId());
             return "redirect:/users/login";
         } catch (IllegalArgumentException e) {
