@@ -82,13 +82,6 @@ public class SourcingService {
         return errors;    
     }
 
-    // 일단 variation 제대로 되는지 확인 해보기 위한 테스트 메소드
-    // @Transactional
-    // public Sourcing getSourcingWithVariations(Long id) {
-    //     return sourcingRepository.findByIdWithVariations(id)
-    //             .orElseThrow(() -> new RuntimeException("상품 없음"));
-    // }
-
     @Transactional
     public Long saveSourcingData(SourcingDTO sourcingDTO, Long userId) {
         if (userId == null) {

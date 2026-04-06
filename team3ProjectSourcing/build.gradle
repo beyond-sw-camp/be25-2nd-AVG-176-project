@@ -37,7 +37,8 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	// SourcingPageController Thymeleaf — 전부 Vue/API만 쓰면 제거
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// 이거때문에 로그인 리다이렉트 발생. 이거 나중에 처리해야함.
+	// implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

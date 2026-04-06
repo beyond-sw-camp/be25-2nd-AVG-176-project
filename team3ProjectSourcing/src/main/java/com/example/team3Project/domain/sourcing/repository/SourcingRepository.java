@@ -16,7 +16,9 @@ public interface SourcingRepository extends JpaRepository<Sourcing, Long>{
 
     Optional<Sourcing> findByProductId(String productId);
 
-    // 이 쿼리가 실행 됨.
-    @Query("SELECT DISTINCT s FROM Sourcing s JOIN FETCH s.variations v LEFT JOIN FETCH v.dimensions WHERE s.id = :id")
-    Optional<Sourcing> findByIdWithVariations(@Param("id") Long id);
+    @Query("SELECT DISTINCT s FROM Sourcing s LEFT JOIN FETCH s.variations v LEFT JOIN FETCH v.dimensions "
+            + "WHERE s.productId = :productId AND s.userId = :userId")
+    Optional<Sourcing> findByProductIdAndUserIdWithVariations(
+            @Param("productId") String productId,
+            @Param("userId") Long userId);
 }
