@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4c3ba028-ee6b-4691-8ea6-486c65fcd6c7" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/team3Project/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/dto/SignupRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/domain/user/dto/SignupRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/interceptor/JwtCheckInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/java/com/example/team3Project/global/interceptor/JwtCheckInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/signup.html" beforeDir="false" afterPath="$PROJECT_DIR$/team3Project/src/main/resources/templates/users/signup.html" afterDir="false" />
-    </list>
+    <list default="true" id="4c3ba028-ee6b-4691-8ea6-486c65fcd6c7" name="변경" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -45,25 +33,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project/team3Project/build.gradle.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "jiyeon",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "프로젝트",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "editor.preferences.tabs",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project/team3Project/build.gradle.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;jiyeon&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Playdata/Documents/GitHub/be25-2nd-avg-height-174-project&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;프로젝트&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
