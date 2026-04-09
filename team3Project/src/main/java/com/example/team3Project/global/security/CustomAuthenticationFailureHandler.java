@@ -45,15 +45,29 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             errorMessage = "username";
         }
 
-        // 리다이렉트 URL 유지
-        String redirectURL = request.getParameter("redirectURL");
-        if (redirectURL == null || redirectURL.isEmpty()) {
-            redirectURL = "/";
-        }
+        // AJAX 요청인 경우 JSON 에러 응답
+        if (isAjaxRequest(request)) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"success\":false,\"error\":\"" + errorMessage + "\"}");
+        } else {
+            // 리다이렉트 URL 유지
+            String redirectURL = request.getParameter("redirectURL");
+            if (redirectURL == null || redirectURL.isEmpty()) {
+                redirectURL = "/";
+            }
 
-        response.sendRedirect("/users/login?error=" + errorMessage + "&username=" + 
-                (username != null ? java.net.URLEncoder.encode(username, "UTF-8") : "") + 
-                "&redirectURL=" + java.net.URLEncoder.encode(redirectURL, "UTF-8"));
+            response.sendRedirect("/users/login?error=" + errorMessage + "&username=" +
+                    (username != null ? java.net.URLEncoder.encode(username, "UTF-8") : "") +
+                    "&redirectURL=" + java.net.URLEncoder.encode(redirectURL, "UTF-8"));
+        }
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        return "XMLHttpRequest".equals(requestedWith) ||
+                "application/json".equals(request.getContentType()) ||
+                request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json");
     }
 
     private void increaseLoginFailCount(String username) {

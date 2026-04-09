@@ -61,6 +61,20 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         log.info("일반 로그인 성공: userId={}, username={}, redirectURL={}",
                 user.getId(), username, redirectURL);
 
-        response.sendRedirect(redirectURL);
+        // AJAX 요청인 경우 JSON 응답
+        if (isAjaxRequest(request)) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("{\"success\":true,\"username\":\"" + username + "\"}");
+        } else {
+            response.sendRedirect(redirectURL);
+        }
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        return "XMLHttpRequest".equals(requestedWith) ||
+                "application/json".equals(request.getContentType()) ||
+                request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json");
     }
 }

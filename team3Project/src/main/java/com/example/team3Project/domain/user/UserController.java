@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -130,12 +131,16 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public String myPage(@LoginUser User user, Model model) {
+    @ResponseBody
+    public ResponseEntity<?> myPage(@LoginUser User user) {
         if (user == null) {
-            return "redirect:/users/login";
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
         }
-        model.addAttribute("user", user);
-        return "users/me";
+        return ResponseEntity.ok(Map.of(
+                "username", user.getUsername(),
+                "nickname", user.getNickname(),
+                "email", user.getEmail()
+        ));
     }
 
     @GetMapping("/update")
