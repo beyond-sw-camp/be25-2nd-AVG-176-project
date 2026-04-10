@@ -6,7 +6,6 @@ import com.example.team3Project.domain.user.dto.SignupRequest;
 import com.example.team3Project.domain.user.dto.UserUpdateFormRequest;
 import com.example.team3Project.domain.user.dto.UserWithdrawRequest;
 import com.example.team3Project.global.annotation.LoginUser;
-import com.example.team3Project.global.exception.LoginException;
 import com.example.team3Project.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -130,9 +129,20 @@ public class UserController {
         return "redirect:/users/login";
     }
 
+    // HTML 뷰 - 브라우저에서 직접 접속
     @GetMapping("/me")
+    public String myPageView(@LoginUser User user, Model model) {
+        if (user == null) {
+            return "redirect:/users/login";
+        }
+        model.addAttribute("user", user);
+        return "users/me";
+    }
+
+    // JSON API - Vue 프론트에서 AJAX 호출
+    @GetMapping("/api/me")
     @ResponseBody
-    public ResponseEntity<?> myPage(@LoginUser User user) {
+    public ResponseEntity<?> myPageApi(@LoginUser User user) {
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
         }
@@ -292,7 +302,7 @@ public class UserController {
                                 Model model) {
         try {
             userService.resetPassword(username, email);
-            model.addAttribute("successMessage", "임시 비밀번호가 이메일로 발송되었습니다.");
+            model.addAttribute("successMessage", "입력하신 이메일로 전송되었습니다.");
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
         }

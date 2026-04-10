@@ -40,8 +40,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         log.info("OAuth2 로그인 성공 - 사용자: {}, JWT 쿠키 발급 완료", oauth2User.getUsername());
 
-        // 리다이렉트 URL 설정 (기본 홈)
-        String targetUrl = "/";
+        // 리다이렉트 URL 설정 (프론트엔드 Vue 서버로 고정)
+        String targetUrl = "http://100.119.201.17:9000/";
         if (response.isCommitted()) {
             log.debug("Response has already been committed");
             return;

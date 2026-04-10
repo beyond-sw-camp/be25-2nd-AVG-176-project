@@ -52,10 +52,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         ResponseCookie cookie = jwtUtil.createJwtCookie(token);
         response.addHeader("Set-Cookie", cookie.toString());
 
-        // 리다이렉트 URL 가져오기 (기본값: "/")
+        // 리다이렉트 URL 가져오기 (기본값: 프론트엔드 Vue 서버)
         String redirectURL = request.getParameter("redirectURL");
         if (redirectURL == null || redirectURL.isEmpty() || redirectURL.contains("/users/login")) {
-            redirectURL = "/";
+            redirectURL = "http://100.119.201.17:9000/";
         }
 
         log.info("일반 로그인 성공: userId={}, username={}, redirectURL={}",
