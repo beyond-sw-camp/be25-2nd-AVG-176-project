@@ -18,7 +18,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private static final String COOKIE_NAME = "token";
-    private static final long TOKEN_VALIDITY_MS = 1000 * 60 * 60; // 1시간
+    private static final long TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 6; // 6시간
 
     private final SecretKey secretKey;
 
