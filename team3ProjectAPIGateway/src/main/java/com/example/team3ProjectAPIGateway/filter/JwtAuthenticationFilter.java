@@ -9,7 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -35,6 +34,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     /**
      * JWT 없이 통과시킬 경로 (게이트웨이는 막지 않음). 인증은 각 백엔드(세션/JWT)가 담당.
      * - /users/** : USER-SERVICE Thymeleaf·폼 (로그인 후 /users/update, /users/me 등) — 복수 users
+     * - /oauth2/**, /login/oauth2/** : OAuth2 리다이렉트·콜백 (USER-SERVICE)
+     * - /api/** : USER-SERVICE API (백엔드 Security 가 인증 처리)
      * - /sourcing/** GET·HEAD·OPTIONS : 폼 HTML·CORS preflight
      * - POST /sourcing/auto, /sourcing/upload : Bearer JWT 또는 HttpOnly 쿠키 {@code token} (게이트웨이가 X-User-Id 주입)
      * - /user/**  : 아래 목록 제외 시 게이트웨이에서 Bearer JWT 필수 — 단수 user (REST)
@@ -114,6 +115,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return true;
         }
         if (path.startsWith("/users/") || "/users".equals(path)) {
+            return true;
+        }
+        if (path.startsWith("/oauth2/") || "/oauth2".equals(path)) {
+            return true;
+        }
+        if (path.startsWith("/login/oauth2/")) {
+            return true;
+        }
+        if (path.startsWith("/api/") || "/api".equals(path)) {
             return true;
         }
         if (path.startsWith("/sourcing/") && isSourcingReadOrCors(method)) {
