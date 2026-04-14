@@ -165,21 +165,11 @@
 
 ---
 
-## 8. 🖥 화면 및 기능 설계서
-<details>
-   <summary>세부사항</summary>
-<div markdown="1">
-  <a href="https://www.figma.com/design/m2ExYsceFRsQDmCImIB0cT/-3%EC%A1%B0--AVG-height--174cm?node-id=0-1&p=f&t=aDgmD25W6KrZuLQb-0">화면 및 기능 설계서</a>
-</div>
-</details>
-<br>
----
-
-## 9. 🧪 테스트 계획 및 결과 보고서
+## 8. 🧪 테스트 계획 및 결과 보고서
 
 ---
 
-## 10. 🔎 회고
+## 9. 🔎 회고
 
 <details>
 <summary>세부사항</summary>
