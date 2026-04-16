@@ -1,20 +1,13 @@
 # be25-2nd-avg(height)=174-project
 
 # 업무 자동화 시스템
+<img width="1435" height="690" alt="스크린샷 2026-04-16 시간: 16 07 39" src="https://github.com/user-attachments/assets/55df618a-f32d-4422-a822-97d0d49c901c" />
 
 ## 👥 팀원 소개
 
-<table style="width:100%;">
-  <thead>
-    <tr align="center">
-      <th>민정기</th>
-      <th>이진</th>
-      <th>김지연</th>
-      <th>이용호</th>
-      <th>현재진</th>
-     </tr>
-  </thead>
-</table>
+| 민정기 (팀장) | 김지연 (기획, 로그인) | 이진(가공, 프론트엔드) | 이용호(배송,결제) | 현재진(배송,결제)|
+| --- | --- | --- | --- | --- |
+|<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/c5f9b4e1-5ff7-474c-8b7a-cb24c0aa5dff" /> |<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/aa34b18a-3661-48e3-87e1-4f59fe0cb204" />|<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/3a124a8c-f725-4d31-808a-c848257d795b" />|<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/a8fe86da-a741-4b58-85ef-a4fbb1a4777f" />|<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/7de0301e-afde-451a-8d10-8fa55c7ddf30" />|
 
 ---
 
