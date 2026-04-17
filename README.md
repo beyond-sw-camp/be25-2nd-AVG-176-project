@@ -19,7 +19,8 @@
 5. [📑 테이블 정의서](#5-테이블-정의서)
 6. [🏗 시스템 아키텍처](#6-시스템-아키텍처)
 7. [📡 API 명세서](#7-api-명세서)
-8. [🔎 회고](#8-회고)
+8. [🔎 테스트 케이스](#8-테스트-케이스)
+9. [🔎 회고](#9-회고)
 
 ---
 
@@ -227,7 +228,19 @@ graph TD
 
 ---
 
-## 8. 🔎 회고
+## 8. 📄 테스트 케이스
+
+<details>
+   <summary>세부사항</summary>
+<div markdown="1">
+  <a href="https://docs.google.com/spreadsheets/d/1dIV9X2avDBPIIPxYHD-rsDEI2gGXk_7wAITY9AfHpv4/edit?gid=522444149#gid=522444149"> 테스트 케이스 </a>
+</div>
+</details>
+<br>
+
+---
+
+## 9. 🔎 회고
 
 <details>
 <summary>세부사항</summary>
