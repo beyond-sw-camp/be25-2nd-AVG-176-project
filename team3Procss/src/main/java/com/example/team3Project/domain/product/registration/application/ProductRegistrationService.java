@@ -1,6 +1,7 @@
 package com.example.team3Project.domain.product.registration.application;
 
 import com.example.team3Project.domain.policy.entity.MarketCode;
+import com.example.team3Project.domain.policy.entity.PriceRoundingUnit;
 import com.example.team3Project.domain.product.coupang.application.DummyCoupangProductService;
 import com.example.team3Project.domain.sourcing.SourcingCleanupRepository;
 import com.example.team3Project.domain.product.processing.dto.SourcingVariationResponse;
@@ -54,6 +55,7 @@ public class ProductRegistrationService {
             BigDecimal originalPrice,
             String currency,
             BigDecimal exchangeRate,
+            PriceRoundingUnit roundingUnit,
             BigDecimal costInKrw,
             BigDecimal salePrice,
             BigDecimal shippingFee,
@@ -73,6 +75,7 @@ public class ProductRegistrationService {
                 originalPrice,
                 currency,
                 exchangeRate,
+                roundingUnit,
                 costInKrw,
                 salePrice,
                 BigDecimal.ZERO,
@@ -96,6 +99,7 @@ public class ProductRegistrationService {
             BigDecimal originalPrice,
             String currency,
             BigDecimal exchangeRate,
+            PriceRoundingUnit roundingUnit,
             BigDecimal costInKrw,
             BigDecimal salePrice,
             BigDecimal marginKrw,
@@ -139,7 +143,7 @@ public class ProductRegistrationService {
                 registrationStatus,
                 exclusionReason
         );
-        registration.replaceOptions(toDummyOptions(sourcingVariations));
+        registration.replaceOptions(toDummyOptions(sourcingVariations, exchangeRate, roundingUnit));
         registration.replaceImages(toDummyImages(mainImageUrl, descriptionImageUrls, sourcingVariations));
 
         return dummyProductRegistrationRepository.save(registration);
@@ -334,7 +338,11 @@ public class ProductRegistrationService {
     }
 
     // variation 원본을 더미 등록용 옵션 엔티티 목록으로 변환한다.
-    private List<DummyProductOption> toDummyOptions(List<SourcingVariationResponse> sourcingVariations) {
+    private List<DummyProductOption> toDummyOptions(
+            List<SourcingVariationResponse> sourcingVariations,
+            BigDecimal exchangeRate,
+            PriceRoundingUnit roundingUnit
+    ) {
         List<DummyProductOption> options = new ArrayList<>();
         if (sourcingVariations == null) {
             return options;
@@ -347,6 +355,7 @@ public class ProductRegistrationService {
                             toDimensionsJson(variation.getDimensions()),
                             variation.isSelected(),
                             variation.getPrice(),
+                            calculateOptionSalePrice(variation.getPrice(), exchangeRate, roundingUnit),
                             variation.getCurrency(),
                             variation.getStock(),
                             null,
@@ -355,6 +364,24 @@ public class ProductRegistrationService {
             );
         }
         return options;
+    }
+
+    private BigDecimal calculateOptionSalePrice(
+            BigDecimal originalPrice,
+            BigDecimal exchangeRate,
+            PriceRoundingUnit roundingUnit
+    ) {
+        if (originalPrice == null || exchangeRate == null) {
+            return null;
+        }
+        BigDecimal salePrice = originalPrice.multiply(exchangeRate);
+        if (roundingUnit == null) {
+            return salePrice;
+        }
+        BigDecimal roundingAmount = BigDecimal.valueOf(roundingUnit.getAmount());
+        return salePrice
+                .divide(roundingAmount, 0, java.math.RoundingMode.UP)
+                .multiply(roundingAmount);
     }
 
     // 대표/설명/옵션 이미지를 한 컬렉션으로 모아 등록 엔티티에 저장한다.

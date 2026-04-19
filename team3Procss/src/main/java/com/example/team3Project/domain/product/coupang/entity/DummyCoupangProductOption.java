@@ -43,8 +43,11 @@ public class DummyCoupangProductOption {
     @Column(name = "selected", nullable = false)
     private boolean selected;
 
-    @Column(name = "price")
-    private BigDecimal price;
+    @Column(name = "original_price")
+    private BigDecimal originalPrice;
+
+    @Column(name = "sale_price")
+    private BigDecimal salePrice;
 
     @Column(name = "currency", length = 10)
     private String currency;
@@ -57,7 +60,8 @@ public class DummyCoupangProductOption {
             String optionAsin,
             String optionDimensions,
             boolean selected,
-            BigDecimal price,
+            BigDecimal originalPrice,
+            BigDecimal salePrice,
             String currency,
             String stock
     ) {
@@ -65,7 +69,8 @@ public class DummyCoupangProductOption {
         option.optionAsin = optionAsin;
         option.optionDimensions = optionDimensions;
         option.selected = selected;
-        option.price = price;
+        option.originalPrice = originalPrice;
+        option.salePrice = salePrice;
         option.currency = currency;
         option.stock = stock;
         return option;

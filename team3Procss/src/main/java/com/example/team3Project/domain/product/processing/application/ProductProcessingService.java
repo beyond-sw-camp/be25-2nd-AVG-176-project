@@ -191,6 +191,7 @@ public class ProductProcessingService {
                         request.getOriginalPrice(),
                         request.getCurrency(),
                         exchangeRate,
+                        policyBundle.getPolicySettingResponse().getRoundingUnit(),
                         costInKrw,
                         salePrice,
                         marginKrw,

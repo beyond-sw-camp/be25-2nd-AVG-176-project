@@ -1,11 +1,13 @@
 package com.example.team3Project.domain.product.registration.application;
 
 import com.example.team3Project.domain.policy.entity.MarketCode;
+import com.example.team3Project.domain.policy.entity.PriceRoundingUnit;
 import com.example.team3Project.domain.product.coupang.application.DummyCoupangProductService;
 import com.example.team3Project.domain.product.processing.dto.SourcingVariationResponse;
 import com.example.team3Project.domain.product.registration.dao.DummyProductRegistrationRepository;
 import com.example.team3Project.domain.product.registration.dto.DummyProductRegistrationStatusCountsResponse;
 import com.example.team3Project.domain.product.registration.entity.DummyProductImageType;
+import com.example.team3Project.domain.product.registration.entity.DummyProductOption;
 import com.example.team3Project.domain.product.registration.entity.DummyProductRegistration;
 import com.example.team3Project.domain.product.registration.entity.RegistrationStatus;
 import com.example.team3Project.domain.sourcing.SourcingCleanupRepository;
@@ -19,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -87,6 +90,7 @@ class ProductRegistrationServiceTest {
                 BigDecimal.valueOf(20),
                 "USD",
                 BigDecimal.valueOf(1350),
+                PriceRoundingUnit.HUNDRED_WON,
                 BigDecimal.valueOf(27000),
                 BigDecimal.valueOf(35000),
                 BigDecimal.valueOf(4000),
@@ -126,6 +130,7 @@ class ProductRegistrationServiceTest {
                 BigDecimal.valueOf(20),
                 "USD",
                 BigDecimal.valueOf(1350),
+                PriceRoundingUnit.HUNDRED_WON,
                 BigDecimal.valueOf(27000),
                 BigDecimal.valueOf(35000),
                 BigDecimal.valueOf(4000),
@@ -141,6 +146,48 @@ class ProductRegistrationServiceTest {
         assertEquals(DummyProductImageType.OPTION, result.getImages().get(2).getImageType());
         assertEquals("B0OPTION", result.getImages().get(2).getOptionAsin());
         assertEquals("sourcing-images", result.getImages().get(2).getBucketName());
+    }
+
+    @Test
+    @DisplayName("option sale price applies policy exchange rate")
+    void register_appliesExchangeRateToOptionSalePrice() {
+        when(repository.findByUserIdAndMarketCodeAndSourceProductId(1L, MarketCode.COUPANG, "B0MAIN"))
+                .thenReturn(Optional.empty());
+        when(repository.save(org.mockito.ArgumentMatchers.any(DummyProductRegistration.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        SourcingVariationResponse variation = new SourcingVariationResponse();
+        ReflectionTestUtils.setField(variation, "asin", "B0OPTION");
+        ReflectionTestUtils.setField(variation, "dimensions", Map.of("Color", "Black"));
+        ReflectionTestUtils.setField(variation, "selected", true);
+        ReflectionTestUtils.setField(variation, "price", BigDecimal.valueOf(12.5));
+        ReflectionTestUtils.setField(variation, "currency", "USD");
+        ReflectionTestUtils.setField(variation, "stock", "In Stock");
+
+        DummyProductRegistration result = service.register(
+                1L,
+                MarketCode.COUPANG,
+                "B0MAIN",
+                "https://www.amazon.com/dp/B0MAIN",
+                "main",
+                List.of(),
+                List.of(variation),
+                "processed-name",
+                "processed-brand",
+                BigDecimal.valueOf(20),
+                "USD",
+                BigDecimal.valueOf(1350),
+                PriceRoundingUnit.HUNDRED_WON,
+                BigDecimal.valueOf(27000),
+                BigDecimal.valueOf(35000),
+                BigDecimal.valueOf(4000),
+                RegistrationStatus.READY,
+                null
+        );
+
+        DummyProductOption option = result.getOptions().get(0);
+        assertEquals(0, BigDecimal.valueOf(12.5).compareTo(option.getOriginalPrice()));
+        assertEquals(0, BigDecimal.valueOf(16900).compareTo(option.getSalePrice()));
     }
 
     @Test

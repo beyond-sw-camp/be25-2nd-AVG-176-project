@@ -49,7 +49,7 @@ class DummyCoupangProductServiceTest {
     @DisplayName("수동 발행은 자동 등록 정책을 확인하지 않고 쿠팡 더미 상품을 발행한다")
     void publishManually_createsCoupangProduct_withoutCheckingAutoPublishPolicy() {
         DummyProductRegistration registration = createRegistration(10L, RegistrationStatus.READY, MarketCode.COUPANG);
-        registration.addOption(DummyProductOption.create("OPT-1", "{\"color\":\"black\"}", true, BigDecimal.TEN, "USD", "In Stock", null, null));
+        registration.addOption(DummyProductOption.create("OPT-1", "{\"color\":\"black\"}", true, BigDecimal.TEN, BigDecimal.valueOf(13500), "USD", "In Stock", null, null));
         registration.addImage(DummyProductImage.create(DummyProductImageType.MAIN, null, "main-image", 0));
 
         when(registrationRepository.findByDummyProductRegistrationIdAndUserId(10L, 1L))
@@ -63,6 +63,8 @@ class DummyCoupangProductServiceTest {
 
         assertEquals("가공 상품명", product.getProductName());
         assertEquals(1, product.getOptions().size());
+        assertEquals(0, BigDecimal.TEN.compareTo(product.getOptions().get(0).getOriginalPrice()));
+        assertEquals(0, BigDecimal.valueOf(13500).compareTo(product.getOptions().get(0).getSalePrice()));
         assertEquals(1, product.getImages().size());
         assertEquals(RegistrationStatus.REGISTERED, registration.getRegistrationStatus());
         verify(coupangProductRepository).save(any(DummyCoupangProduct.class));

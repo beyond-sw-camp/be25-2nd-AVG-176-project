@@ -160,7 +160,8 @@ public class DummyCoupangProductService {
                             option.getOptionAsin(),
                             option.getOptionDimensions(),
                             option.isSelected(),
-                            option.getPrice(),
+                            option.getOriginalPrice(),
+                            option.getSalePrice(),
                             option.getCurrency(),
                             option.getStock()
                     )

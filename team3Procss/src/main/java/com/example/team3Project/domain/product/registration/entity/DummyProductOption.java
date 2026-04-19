@@ -47,8 +47,11 @@ public class DummyProductOption {
     private boolean selected;
 
     // variation 에서 현재 실제 저장 대상으로 보는 가격 정보이다.
-    @Column(name = "price")
-    private BigDecimal price;
+    @Column(name = "original_price")
+    private BigDecimal originalPrice;
+
+    @Column(name = "sale_price")
+    private BigDecimal salePrice;
 
     @Column(name = "currency", length = 10)
     private String currency;
@@ -69,7 +72,8 @@ public class DummyProductOption {
             String optionAsin,
             String optionDimensions,
             boolean selected,
-            BigDecimal price,
+            BigDecimal originalPrice,
+            BigDecimal salePrice,
             String currency,
             String stock,
             Double rating,
@@ -79,7 +83,8 @@ public class DummyProductOption {
         option.optionAsin = optionAsin;
         option.optionDimensions = optionDimensions;
         option.selected = selected;
-        option.price = price;
+        option.originalPrice = originalPrice;
+        option.salePrice = salePrice;
         option.currency = currency;
         option.stock = stock;
         option.rating = rating;
