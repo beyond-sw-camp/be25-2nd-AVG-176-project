@@ -10,6 +10,7 @@ public class OrderRequest {
 
     // 주문 상품
     private Long dummyCoupangProductId;
+    private Long dummyCoupangProductOptionId;
     private int quantity;
 
     // 고객 정보

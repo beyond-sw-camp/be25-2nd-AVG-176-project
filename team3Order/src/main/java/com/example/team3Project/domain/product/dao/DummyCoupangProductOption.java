@@ -27,7 +27,8 @@ public class DummyCoupangProductOption {
     private String optionDimensions;
 
     // 옵션 가격
-    private BigDecimal price;
+    @Column(name = "sale_price")
+    private BigDecimal salePrice;
 
     // 기본 선택 여부
     private Boolean selected;

@@ -5,11 +5,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByAutoOrderStatus(String status);
 
     List<Order> findByUserId(Long userId);
+
+    Optional<Order> findByIdAndUserId(Long id, Long userId);
 
     @Query("""
             select o
@@ -18,6 +21,27 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             left join fetch o.dummyCoupangProduct
             """)
     List<Order> findAllWithShipment();
+
+    @Query("""
+            select o
+            from Order o
+            left join fetch o.shipment
+            left join fetch o.dummyCoupangProduct p
+            where p.userId = :userId
+            """)
+    List<Order> findAllWithShipmentByProductUserId(@Param("userId") Long userId);
+
+    @Query("""
+            select o
+            from Order o
+            where o.autoOrderStatus = :status
+              and o.dummyCoupangProduct is not null
+              and o.dummyCoupangProduct.userId = :userId
+            """)
+    List<Order> findByAutoOrderStatusAndProductUserId(
+            @Param("status") String status,
+            @Param("userId") Long userId
+    );
 
     @Query("""
             SELECT YEAR(o.createdAt), MONTH(o.createdAt),

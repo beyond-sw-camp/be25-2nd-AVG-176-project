@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,47 +27,64 @@ public class PaymentService {
     private final ShipmentService shipmentService;
 
     @Transactional
-    public Payment processPayment(Long orderId, Long cardId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+    public Payment processPayment(Long userId, Long orderId, Long cardId) {
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setAmount(order.getTotalAmount());
+        if (cardId == null) {
+            return processPaymentByPriority(userId, order);
+        }
 
-        Card card = cardRepository.findById(cardId).orElse(null);
+        return processPaymentWithCard(userId, order, cardId);
+    }
+
+    private Payment processPaymentByPriority(Long userId, Order order) {
+        List<Card> cards = cardRepository.findByUserIdAndActiveTrueOrderByIdAsc(userId);
+        if (cards.isEmpty()) {
+            return failPayment(order, createPayment(order), PaymentStatus.FAILED_CARD_NOT_FOUND);
+        }
+
+        Payment lastFailedPayment = null;
+        for (Card card : cards) {
+            Payment payment = processPaymentWithCard(userId, order, card.getId());
+            if (PaymentStatus.SUCCESS.name().equals(payment.getStatus())) {
+                return payment;
+            }
+            lastFailedPayment = payment;
+        }
+
+        return lastFailedPayment;
+    }
+
+    private Payment processPaymentWithCard(Long userId, Order order, Long cardId) {
+        Payment payment = createPayment(order);
+
+        Card card = cardRepository.findByIdAndUserId(cardId, userId).orElse(null);
         if (card == null) {
             return failPayment(order, payment, PaymentStatus.FAILED_CARD_NOT_FOUND);
         }
 
         payment.setCard(card);
 
-        Long sellerUserId = order.getDummyCoupangProduct() != null
-                ? order.getDummyCoupangProduct().getUserId()
-                : null;
-        if (sellerUserId != null && card.getUserId() != null && !sellerUserId.equals(card.getUserId())) {
-            return failPayment(order, payment, PaymentStatus.FAILED_CARD_OWNER_MISMATCH);
-        }
-
         if (!card.isActive()) {
             return failPayment(order, payment, PaymentStatus.FAILED_CARD_INACTIVE);
         }
 
-        DecryptedCardInfo cardInfo = cardService.getDecryptedCard(cardId);
+        DecryptedCardInfo cardInfo = cardService.getDecryptedCard(userId, cardId);
         if (isCardExpired(cardInfo.getExpiry())) {
             return failPayment(order, payment, PaymentStatus.FAILED_CARD_EXPIRED);
         }
 
-        if (order.getTotalAmount() > card.getCardLimit()) {
+        if (payment.getAmount() > card.getCardLimit()) {
             return failPayment(order, payment, PaymentStatus.FAILED_LIMIT_EXCEEDED);
         }
 
-        if (order.getTotalAmount() > card.getBalance()) {
+        if (payment.getAmount() > card.getBalance()) {
             return failPayment(order, payment, PaymentStatus.FAILED_INSUFFICIENT_BALANCE);
         }
 
-        card.setBalance(card.getBalance() - order.getTotalAmount());
-        card.setCardLimit(card.getCardLimit() - order.getTotalAmount());
+        card.setBalance(card.getBalance() - payment.getAmount());
+        card.setCardLimit(card.getCardLimit() - payment.getAmount());
         cardRepository.save(card);
 
         payment.setStatus(PaymentStatus.SUCCESS.name());
@@ -78,15 +96,19 @@ public class PaymentService {
     }
 
     @Transactional
-    public Payment refundPayment(Long paymentId) {
+    public Payment refundPayment(Long userId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("결제를 찾을 수 없습니다."));
-
-        if (!PaymentStatus.SUCCESS.name().equals(payment.getStatus())) {
-            throw new RuntimeException("환불할 수 없는 결제입니다.");
-        }
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
 
         Card card = payment.getCard();
+        if (card == null || card.getUserId() == null || !card.getUserId().equals(userId)) {
+            throw new RuntimeException("Payment not found");
+        }
+
+        if (!PaymentStatus.SUCCESS.name().equals(payment.getStatus())) {
+            throw new RuntimeException("Payment cannot be refunded.");
+        }
+
         Order order = payment.getOrder();
 
         card.setBalance(card.getBalance() + payment.getAmount());
@@ -98,6 +120,17 @@ public class PaymentService {
         order.setAutoOrderStatus("FAILED");
 
         return paymentRepository.save(payment);
+    }
+
+    private Payment createPayment(Order order) {
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(getPaymentAmount(order));
+        return payment;
+    }
+
+    private int getPaymentAmount(Order order) {
+        return Math.max(order.getTotalAmount() - order.getMargin(), 0);
     }
 
     private Payment failPayment(Order order, Payment payment, PaymentStatus status) {

@@ -30,6 +30,12 @@ public class ProductPageDto {
 
     // 좌측 사이드바용 전체 상품 요약 목록
     private List<ProductSummaryDto> allProducts;
+    private int sidebarPage;
+    private int sidebarSize;
+    private int sidebarTotalPages;
+    private long sidebarTotalElements;
+    private boolean sidebarHasPrevious;
+    private boolean sidebarHasNext;
 
     // 옵션 정보 DTO
     @Getter

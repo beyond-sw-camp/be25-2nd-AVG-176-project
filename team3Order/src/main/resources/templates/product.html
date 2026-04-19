@@ -31,7 +31,7 @@
         .price-original { color: #6b7280; text-decoration: line-through; }
         .price-sale { color: #dc2626; font-size: 1.8rem; font-weight: 800; }
         .desc-card { padding: 24px; }
-        .desc-card img { width: 100%; border-radius: 12px; margin-bottom: 12px; }
+        .desc-card img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 12px; margin-bottom: 12px; background: #f9fafb; }
         .page-alert-wrap { position: sticky; top: 12px; z-index: 1055; }
         .card-option {
             display: flex;
@@ -51,7 +51,7 @@
 <body>
 <nav class="top-nav">
     <div class="container">
-        <a href="/product/">Product Page</a>
+        <a href="/product/">coupong</a>
     </div>
 </nav>
 
@@ -59,14 +59,16 @@
     <div id="pageAlertWrap" class="page-alert-wrap"></div>
 </div>
 
+
 <div class="container pb-4">
     <div class="row g-4">
         <div class="col-lg-3">
+            <!--사이드바-->
             <div class="product-list-card">
-                <div class="list-title">Products</div>
+                <div class="list-title">동일한 판매자 상품 리스트</div>
                 <a class="product-item"
                    th:each="p : ${product.allProducts}"
-                   th:href="@{/product/{id}(id=${p.productId})}"
+                   th:href="@{/product/{id}(id=${p.productId}, sidebarPage=${product.sidebarPage}, sidebarSize=${product.sidebarSize})}"
                    th:classappend="${p.productId == product.productId} ? ' active' : ''">
                     <img th:src="${p.mainImageUrl != null and !#strings.isEmpty(p.mainImageUrl) ? p.mainImageUrl : 'https://via.placeholder.com/52x52?text=N/A'}"
                          th:alt="${p.productName}">
@@ -78,6 +80,28 @@
                         </div>
                     </div>
                 </a>
+                <div class="p-3 border-top" th:if="${product.sidebarTotalPages > 1}">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${!product.sidebarHasPrevious} ? ' disabled' : ''"
+                           th:href="${product.sidebarHasPrevious} ? @{/product/{id}(id=${product.productId}, sidebarPage=${product.sidebarPage - 1}, sidebarSize=${product.sidebarSize})} : '#'">
+                            Previous
+                        </a>
+                        <div class="small text-secondary text-nowrap"
+                             th:text="${product.sidebarPage + 1} + ' / ' + ${product.sidebarTotalPages}">
+                            1 / 1
+                        </div>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${!product.sidebarHasNext} ? ' disabled' : ''"
+                           th:href="${product.sidebarHasNext} ? @{/product/{id}(id=${product.productId}, sidebarPage=${product.sidebarPage + 1}, sidebarSize=${product.sidebarSize})} : '#'">
+                            Next
+                        </a>
+                    </div>
+                    <div class="small text-secondary mt-2"
+                         th:text="${#numbers.formatInteger(product.sidebarTotalElements, 0, 'COMMA')} + ' products'">
+                        0 products
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -106,10 +130,11 @@
                         <div class="price-box">
                             <div class="price-original"
                                  th:if="${product.originalPrice != null}"
-                                 th:text="${'Original ' + #numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT') + ' KRW'}">
+                                 th:text="${'Original ' + #numbers.formatDecimal(product.originalPrice, 0, 'COMMA', 0, 'POINT') + ' USD'}">
                                 Original
                             </div>
-                            <div class="price-sale"
+                            <div id="salePriceText"
+                                 class="price-sale"
                                  th:text="${product.salePrice != null ? #numbers.formatDecimal(product.salePrice, 0, 'COMMA', 0, 'POINT') + ' KRW' : 'Price unavailable'}">
                                 Sale price
                             </div>
@@ -125,8 +150,8 @@
                                 <option value="">Select an option</option>
                                 <option th:each="opt : ${product.options}"
                                         th:value="${opt.optionId}"
-                                        th:text="${opt.optionDimensions}"
-                                        th:attr="data-img=${opt.imageUrl}"
+                                        th:text="${opt.price != null ? opt.optionDimensions + ' - ' + #numbers.formatDecimal(opt.price, 0, 'COMMA', 0, 'POINT') + ' KRW' : opt.optionDimensions}"
+                                        th:attr="data-img=${opt.imageUrl},data-price=${opt.price},data-currency=${opt.currency}"
                                         th:selected="${opt.selected}">
                                     Option
                                 </option>
@@ -148,12 +173,16 @@
                 <h2 class="h5 fw-bold mb-3">Product Description</h2>
                 <img th:each="imageUrl : ${product.descriptionImageUrls}"
                      th:src="${imageUrl}"
+                     loading="lazy"
+                     referrerpolicy="no-referrer"
+                     onerror="this.style.display='none'"
                      alt="Description image">
             </div>
         </div>
     </div>
 </div>
 
+<!--주문자 정보 입력 팝업-->
 <div class="modal fade" id="buyerModal" tabindex="-1" aria-labelledby="buyerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 16px; border: none;">
@@ -186,30 +215,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-danger fw-bold px-4" onclick="proceedToCardSelection()">다음</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 16px; border: none;">
-            <div class="modal-header" style="background: #111827; border-radius: 16px 16px 0 0;">
-                <h5 class="modal-title text-white fw-bold" id="cardModalLabel">결제 카드 선택</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div id="cardAlert" class="alert d-none" role="alert"></div>
-                <div class="mb-3 rounded-3 bg-light p-3">
-                    <div class="small text-secondary">결제 예정 금액</div>
-                    <div id="cardTotalAmount" class="fw-bold fs-5">0 KRW</div>
-                </div>
-                <div id="cardList" class="d-grid gap-2"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="backToBuyerModal()">이전</button>
-                <button type="button" class="btn btn-danger fw-bold px-4" onclick="submitOrder()">주문하기</button>
+                <button type="button" class="btn btn-danger fw-bold px-4" onclick="proceedToCardSelection()">주문하기</button>
             </div>
         </div>
     </div>
@@ -220,10 +226,10 @@
     let currentProductId = null;
     let currentSellerUserId = null;
     let currentSalePrice = 0;
+    let currentOptionId = null;
     let currentOrderDraft = null;
 
     const buyerModalEl = document.getElementById('buyerModal');
-    const cardModalEl = document.getElementById('cardModal');
 
     function changeMainImage(thumb) {
         document.getElementById('mainImage').src = thumb.src;
@@ -236,6 +242,12 @@
     function onOptionChange(select) {
         const option = select.options[select.selectedIndex];
         const imageUrl = option.dataset.img;
+        const optionPrice = Number(option.dataset.price || 0);
+
+        currentOptionId = option.value ? Number(option.value) : null;
+        currentSalePrice = optionPrice > 0 ? optionPrice : Number(document.querySelector('[data-sale-price]').dataset.salePrice || 0);
+        document.getElementById('salePriceText').textContent = formatCurrency(currentSalePrice) + ' KRW';
+
         if (imageUrl) {
             document.getElementById('mainImage').src = imageUrl;
         }
@@ -245,6 +257,10 @@
         currentProductId = Number(btn.dataset.productId);
         currentSellerUserId = Number(btn.dataset.userId);
         currentSalePrice = Number(btn.dataset.salePrice || 0);
+        const optionSelect = document.getElementById('optionSelect');
+        if (optionSelect) {
+            onOptionChange(optionSelect);
+        }
         currentOrderDraft = null;
 
         document.getElementById('orderCustomerName').value = '';
@@ -253,8 +269,6 @@
         document.getElementById('orderCustomsNumber').value = '';
         document.getElementById('orderQuantity').value = '1';
         clearAlert('buyerAlert');
-        clearAlert('cardAlert');
-        document.getElementById('cardList').innerHTML = '';
 
         bootstrap.Modal.getOrCreateInstance(buyerModalEl).show();
     }
@@ -278,6 +292,7 @@
         currentOrderDraft = {
             userId: currentSellerUserId,
             dummyCoupangProductId: currentProductId,
+            dummyCoupangProductOptionId: currentOptionId,
             quantity: quantity,
             customerName: customerName,
             customerPhone: customerPhone,
@@ -286,97 +301,18 @@
         };
 
         clearAlert('buyerAlert');
-        loadCards();
-    }
-
-    function loadCards() {
-        showAlert('cardAlert', 'secondary', '카드 정보를 불러오는 중입니다.');
-        document.getElementById('cardList').innerHTML = '';
-        document.getElementById('cardTotalAmount').textContent = formatCurrency(currentSalePrice * currentOrderDraft.quantity) + ' KRW';
-
-        fetch('/cards?userId=' + encodeURIComponent(currentSellerUserId))
-            .then(function (res) {
-                if (!res.ok) {
-                    return res.text().then(function (text) {
-                        throw new Error(text || '카드 정보를 불러오지 못했습니다.');
-                    });
-                }
-                return res.json();
-            })
-            .then(function (cards) {
-                renderCards(cards || []);
-                bootstrap.Modal.getOrCreateInstance(buyerModalEl).hide();
-                bootstrap.Modal.getOrCreateInstance(cardModalEl).show();
-            })
-            .catch(function (err) {
-                bootstrap.Modal.getOrCreateInstance(buyerModalEl).hide();
-                showPageAlert('danger', err.message || '카드 정보를 불러오지 못했습니다.');
-            });
-    }
-
-    function renderCards(cards) {
-        const cardList = document.getElementById('cardList');
-        cardList.innerHTML = '';
-
-        if (!cards.length) {
-            showAlert('cardAlert', 'warning', '상품 등록 사용자와 연결된 카드가 없습니다.');
-            return;
-        }
-
-        clearAlert('cardAlert');
-
-        cards.forEach(function (card, index) {
-            const wrapper = document.createElement('label');
-            wrapper.className = 'card-option';
-            wrapper.innerHTML = `
-                <input type="checkbox" class="form-check-input mt-1 card-check" value="${card.id}" ${index === 0 ? 'checked' : ''}>
-                <div class="flex-grow-1">
-                    <div class="fw-semibold">${escapeHtml(card.cardType || 'CARD')} / ${escapeHtml(card.cardNumber || '')}</div>
-                    <div class="small text-secondary mt-1">잔액 ${formatCurrency(card.balance || 0)} KRW</div>
-                    <div class="small text-secondary">한도 ${formatCurrency(card.cardLimit || 0)} KRW</div>
-                    <div class="small ${card.active ? 'text-success' : 'text-danger'} mt-1">${card.active ? '사용 가능' : '비활성 카드'}</div>
-                </div>
-            `;
-            cardList.appendChild(wrapper);
-        });
-
-        syncSelectedCardState();
-        document.querySelectorAll('.card-check').forEach(function (checkbox) {
-            checkbox.addEventListener('change', function () {
-                if (this.checked) {
-                    document.querySelectorAll('.card-check').forEach(function (other) {
-                        if (other !== checkbox) {
-                            other.checked = false;
-                        }
-                    });
-                }
-                syncSelectedCardState();
-            });
-        });
-    }
-
-    function backToBuyerModal() {
-        bootstrap.Modal.getOrCreateInstance(cardModalEl).hide();
-        bootstrap.Modal.getOrCreateInstance(buyerModalEl).show();
+        submitOrder();
     }
 
     function submitOrder() {
-        const selectedCard = document.querySelector('.card-check:checked');
-        if (!selectedCard) {
-            showAlert('cardAlert', 'warning', '결제 카드를 하나 선택해 주세요.');
-            return;
-        }
-
-        clearAlert('cardAlert');
-
-        const payload = {
-            ...currentOrderDraft,
-            cardId: Number(selectedCard.value)
-        };
+        const payload = { ...currentOrderDraft };
 
         fetch('/orders', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': String(currentSellerUserId)
+            },
             body: JSON.stringify(payload)
         })
             .then(function (res) {
@@ -388,7 +324,7 @@
                 return res.json();
             })
             .then(function (data) {
-                bootstrap.Modal.getOrCreateInstance(cardModalEl).hide();
+                bootstrap.Modal.getOrCreateInstance(buyerModalEl).hide();
 
                 if (data && data.success) {
                     showPageAlert('success', data.message || '주문과 결제가 완료되었습니다.');
@@ -398,16 +334,9 @@
                 showPageAlert('danger', 'AutoSource 시스템을 이용한 상품 주문에 실패했습니다.');
             })
             .catch(function (err) {
-                bootstrap.Modal.getOrCreateInstance(cardModalEl).hide();
+                bootstrap.Modal.getOrCreateInstance(buyerModalEl).hide();
                 showPageAlert('danger', err.message || '주문 처리에 실패했습니다.');
             });
-    }
-
-    function syncSelectedCardState() {
-        document.querySelectorAll('.card-option').forEach(function (item) {
-            const checkbox = item.querySelector('.card-check');
-            item.classList.toggle('selected', checkbox && checkbox.checked);
-        });
     }
 
     function showAlert(elementId, type, message) {
@@ -445,6 +374,13 @@
             .replaceAll('"', '&quot;')
             .replaceAll("'", '&#39;');
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const optionSelect = document.getElementById('optionSelect');
+        if (optionSelect) {
+            onOptionChange(optionSelect);
+        }
+    });
 </script>
 </body>
 </html>

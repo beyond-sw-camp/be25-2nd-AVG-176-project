@@ -7,6 +7,7 @@ public class CardResponse {
 
     private Long id;
     private Long userId;
+    private Integer paymentPriority;
 
     private String cardType;
 
