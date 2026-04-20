@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 홈</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 560px;
+            margin: 50px auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 40px;
+            color: #111;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .main-btn,
+        .danger-btn,
+        .logout-btn {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+        }
+
+        .main-btn {
+            background-color: #f1f3f5;
+            color: #495057;
+        }
+
+        .main-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .danger-btn {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .danger-btn:hover {
+            background-color: #f1c2c7;
+        }
+
+        .logout-btn {
+            background-color: #f1f3f5;
+            color: #495057;
+        }
+
+        .logout-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .logout-form {
+            margin-top: 12px;
+        }
+
+        .logout-form button {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<h1>
+    <span th:text="${user.nickname}">사용자</span>님, 환영합니다
+</h1>
+
+<div class="btn-row">
+    <a th:href="@{/users/me}" class="main-btn">내 정보</a>
+    <a th:href="@{/users/update}" class="main-btn">정보 수정</a>
+    <a th:href="@{/users/delete}" class="danger-btn">회원 탈퇴</a>
+</div>
+
+<div class="btn-row">
+    <a th:href="@{/policies/settings/page}" class="main-btn">정책 설정 테스트</a>
+</div>
+
+<div class="btn-row">
+    <a th:href="@{/policies/settings/words/page}" class="main-btn">금지어 / 치환어 테스트</a>
+</div>
+
+<form th:action="@{/users/logout}" method="post" class="logout-form">
+    <button type="submit" class="logout-btn">로그아웃</button>
+</form>
+</body>
+</html>

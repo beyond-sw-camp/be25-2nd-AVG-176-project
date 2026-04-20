@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>파일 업로드</title>
+</head>
+<body>
+    <h2>파일 업로드</h2>
+    <!-- 파일 업로드를 위해서는 enctype="multipart/form-data"가 필수입니다 -->
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="file" /><br/><br/>
+        <input type="submit" value="업로드" />
+    </form>
+
+    <div th:if="${message}">
+        <h3 th:text="${message}" style="color: blue;"></h3>
+    </div>
+</body>
+</html>
