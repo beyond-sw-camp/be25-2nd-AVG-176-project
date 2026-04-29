@@ -73,6 +73,18 @@ public class OrderController {
         return ResponseEntity.ok(orderService.cancelOrder(user.getId(), id));
     }
 
+    @PostMapping("/{id}/retry")
+    public ResponseEntity<OrderCreateResponse> retryOrder(
+            @LoginUser User user,
+            @PathVariable Long id
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        return ResponseEntity.ok(orderService.retryOrder(user.getId(), id));
+    }
+
     @GetMapping("/management")
     public ResponseEntity<List<OrderManagementResponse>> getOrderManagement(@LoginUser User user) {
         if (user == null) {

@@ -81,7 +81,7 @@ public class OrderService {
         order.setAutoOrderStatus("FAILED");
 
         Order savedOrder = orderRepository.save(order);
-        Payment payment = paymentService.processPayment(userId, savedOrder.getId(), request.getCardId());
+        Payment payment = paymentService.processPayment(userId, savedOrder.getId(), null);
 
         boolean success = PaymentStatus.SUCCESS.name().equals(payment.getStatus());
         if (success) {
@@ -92,6 +92,31 @@ public class OrderService {
                 .orderId(savedOrder.getId())
                 .orderStatus(savedOrder.getStatus())
                 .autoOrderStatus(savedOrder.getAutoOrderStatus())
+                .paymentStatus(payment.getStatus())
+                .success(success)
+                .message(success
+                        ? "주문과 결제가 완료되었습니다."
+                        : "AutoSource 시스템을 이용한 상품 주문에 실패했습니다.")
+                .build();
+    }
+
+    @Transactional
+    public OrderCreateResponse retryOrder(Long userId, Long orderId) {
+        Order order = getOrder(userId, orderId);
+        if ("PAID".equals(order.getStatus())) {
+            throw new RuntimeException("이미 결제 완료된 주문입니다.");
+        }
+
+        Payment payment = paymentService.processPayment(userId, order.getId(), null);
+        boolean success = PaymentStatus.SUCCESS.name().equals(payment.getStatus());
+        if (success && order.getDummyCoupangProduct() != null) {
+            order.getDummyCoupangProduct().incrementOrderCount(order.getQuantity());
+        }
+
+        return OrderCreateResponse.builder()
+                .orderId(order.getId())
+                .orderStatus(order.getStatus())
+                .autoOrderStatus(order.getAutoOrderStatus())
                 .paymentStatus(payment.getStatus())
                 .success(success)
                 .message(success

@@ -150,7 +150,7 @@
                                 <option value="">Select an option</option>
                                 <option th:each="opt : ${product.options}"
                                         th:value="${opt.optionId}"
-                                        th:text="${opt.price != null ? opt.optionDimensions + ' - ' + #numbers.formatDecimal(opt.price, 0, 'COMMA', 0, 'POINT') + ' KRW' : opt.optionDimensions}"
+                                        th:text="${opt.price != null ? opt.optionDimensions + ' - ' + #numbers.formatDecimal(opt.price > 0 ? opt.price : product.salePrice, 0, 'COMMA', 0, 'POINT') + ' KRW' : opt.optionDimensions}"
                                         th:attr="data-img=${opt.imageUrl},data-price=${opt.price},data-currency=${opt.currency}"
                                         th:selected="${opt.selected}">
                                     Option
