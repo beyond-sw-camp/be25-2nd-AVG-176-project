@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>정보 수정</title>
+    <title>?뺣낫 ?섏젙</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
         h2 { text-align: center; color: #333; }
@@ -31,86 +31,97 @@
 <body>
     <div class="back-button-wrap">
         <button type="button" class="back-button" onclick="location.href='/'">
-            ← 이전 화면
+            ???댁쟾 ?붾㈃
         </button>
     </div>
-    <h2>내 정보 수정</h2>
+    <h2>???뺣낫 ?섏젙</h2>
 
-    <!-- 프로필 정보 수정 섹션 -->
+    <!-- ?꾨줈???뺣낫 ?섏젙 ?뱀뀡 -->
     <div class="section">
-        <div class="section-title">프로필 정보</div>
+        <div class="section-title">?꾨줈???뺣낫</div>
 
         <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
-            에러 메시지
+            ?먮윭 硫붿떆吏
         </div>
 
         <form th:action="@{/users/update}" th:object="${userForm}" method="post">
             <div class="form-group">
-                <label for="nickname">닉네임</label>
+                <label for="nickname">?됰꽕??/label>
                 <input type="text" id="nickname" th:field="*{nickname}"
                        th:class="${#fields.hasErrors('nickname')} ? 'field-error' : ''" required>
                 <div class="error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">
-                    닉네임 오류
+                    ?됰꽕???ㅻ쪟
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="email">이메일</label>
+                <label for="phoneNumber">?꾪솕踰덊샇</label>
+                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                       th:class="${#fields.hasErrors('phoneNumber')} ? 'field-error' : ''" required
+                       placeholder="?? 010-1234-5678">
+                <div class="error" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}">
+                    ?꾪솕踰덊샇 ?ㅻ쪟
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">?대찓??/label>
                 <input type="email" id="email" th:field="*{email}"
                        th:class="${#fields.hasErrors('email')} ? 'field-error' : ''" required>
                 <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
-                    이메일 오류
+                    ?대찓???ㅻ쪟
                 </div>
             </div>
 
             <div class="btn-group">
-                <button type="submit" class="btn btn-primary">프로필 수정</button>
-                <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-primary">?꾨줈???섏젙</button>
+                <a th:href="@{/users/me}" class="btn btn-secondary">痍⑥냼</a>
             </div>
         </form>
     </div>
 
-    <!-- 비밀번호 변경 섹션 -->
+    <!-- 鍮꾨?踰덊샇 蹂寃??뱀뀡 -->
     <div class="section">
-        <div class="section-title">비밀번호 변경</div>
+        <div class="section-title">鍮꾨?踰덊샇 蹂寃?/div>
 
-        <!-- 성공 메시지 -->
+        <!-- ?깃났 硫붿떆吏 -->
         <div th:if="${passwordSuccessMessage}" class="alert alert-success" th:text="${passwordSuccessMessage}">
-            비밀번호 변경 성공 메시지
+            鍮꾨?踰덊샇 蹂寃??깃났 硫붿떆吏
         </div>
 
-        <!-- 에러 메시지 -->
+        <!-- ?먮윭 硫붿떆吏 -->
         <div th:if="${passwordErrorMessage}" class="alert" th:text="${passwordErrorMessage}">
-            비밀번호 변경 에러 메시지
+            鍮꾨?踰덊샇 蹂寃??먮윭 硫붿떆吏
         </div>
 
         <form th:action="@{/users/update/password}" method="post">
             <div class="form-group">
-                <label for="currentPassword">현재 비밀번호</label>
+                <label for="currentPassword">?꾩옱 鍮꾨?踰덊샇</label>
                 <input type="password" id="currentPassword" name="currentPassword"
                        th:value="${passwordChangeRequest?.currentPassword}"
                        th:class="${passwordChangeError} ? 'field-error' : ''" required>
             </div>
 
             <div class="form-group">
-                <label for="newPassword">새 비밀번호</label>
+                <label for="newPassword">??鍮꾨?踰덊샇</label>
                 <input type="password" id="newPassword" name="newPassword"
                        th:value="${passwordChangeRequest?.newPassword}"
                        th:class="${passwordChangeError} ? 'field-error' : ''" required
-                       minlength="8" placeholder="최소 8자 이상">
+                       minlength="8" placeholder="理쒖냼 8???댁긽">
             </div>
 
             <div class="form-group">
-                <label for="confirmPassword">새 비밀번호 확인</label>
+                <label for="confirmPassword">??鍮꾨?踰덊샇 ?뺤씤</label>
                 <input type="password" id="confirmPassword" name="confirmPassword"
                        th:value="${passwordChangeRequest?.confirmPassword}"
                        th:class="${passwordChangeError} ? 'field-error' : ''" required>
             </div>
 
             <div class="btn-group">
-                <button type="submit" class="btn btn-primary">비밀번호 변경</button>
+                <button type="submit" class="btn btn-primary">鍮꾨?踰덊샇 蹂寃?/button>
             </div>
         </form>
     </div>
 </body>
 </html>
+

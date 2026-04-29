@@ -23,7 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping({"/products", "/api/products"})
 @RequiredArgsConstructor
 public class DummyCoupangProductController {
 
@@ -31,7 +31,7 @@ public class DummyCoupangProductController {
     private final DummyCoupangProductService dummyCoupangProductService;
 
     // 등록 후보 1건을 쿠팡 더미 마켓 상품으로 발행한다.
-    @PostMapping("/products/registrations/{registrationId}/publish/coupang")
+    @PostMapping("/registrations/{registrationId}/publish/coupang")
     public ResponseEntity<DummyCoupangProduct> publish(
             @LoginUser User user,
             @PathVariable Long registrationId,
@@ -47,7 +47,7 @@ public class DummyCoupangProductController {
     }
 
     // 체크박스로 선택한 등록 후보 여러 건을 한 번에 쿠팡 더미 마켓으로 발행한다.
-    @PostMapping("/products/registrations/publish/coupang")
+    @PostMapping("/registrations/publish/coupang")
     public ResponseEntity<List<DummyCoupangProduct>> publishAll(
             @LoginUser User user,
             @RequestParam(required = false, defaultValue = "true") boolean manual,
@@ -64,7 +64,7 @@ public class DummyCoupangProductController {
     }
 
     // 현재 로그인 사용자의 쿠팡 더미 상품 목록을 조회한다.
-    @GetMapping("/products/coupang")
+    @GetMapping("/coupang")
     public ResponseEntity<List<DummyCoupangProductResponse>> getProducts(@LoginUser User user) {
         if (user == null) {
             return ResponseEntity.status(401).build();
@@ -74,7 +74,7 @@ public class DummyCoupangProductController {
     }
 
     // 현재 로그인 사용자의 쿠팡 더미 상품 상세를 조회한다.
-    @GetMapping("/products/coupang/search")
+    @GetMapping("/coupang/search")
     public ResponseEntity<List<DummyCoupangProductResponse>> searchProducts(
             @LoginUser User user,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -101,7 +101,7 @@ public class DummyCoupangProductController {
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/products/coupang/{dummyCoupangProductId}")
+    @GetMapping("/coupang/{dummyCoupangProductId}")
     public ResponseEntity<DummyCoupangProduct> getProduct(
             @LoginUser User user,
             @PathVariable Long dummyCoupangProductId

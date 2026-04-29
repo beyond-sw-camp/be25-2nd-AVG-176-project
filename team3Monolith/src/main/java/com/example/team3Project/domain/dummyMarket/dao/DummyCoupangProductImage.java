@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 
 // dummy_coupang_product_image 테이블 매핑 엔티티
-@Entity
+@Entity(name = "DummyMarketCoupangProductImage")
 @Table(name = "dummy_coupang_product_image")
 @Getter
 public class DummyCoupangProductImage {

@@ -26,7 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("products/registrations")
+@RequestMapping({"/products/registrations", "/api/products/registrations"})
 @RequiredArgsConstructor
 public class DummyProductRegistrationController {
 

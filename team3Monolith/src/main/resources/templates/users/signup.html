@@ -1,151 +1,196 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>회원가입</title>
+    <title>?뚯썝媛??/title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
-        }
-
-        h2 {
-            font-size: 28px;
-            margin-bottom: 28px;
-            color: #111;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #212529;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 15px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #adb5bd;
-        }
-
-        button {
-            border: none;
-            cursor: pointer;
-            font-family: Arial, sans-serif;
-        }
-
-        .main-btn {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 18px;
-            padding: 14px;
-            text-align: center;
-            text-decoration: none;
-            background-color: #f1f3f5;
-            color: #495057;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .main-btn:hover {
-            background-color: #e9ecef;
-        }
-
-        .back-button-wrap {
-            margin-bottom: 20px;
-        }
-
-        .back-button {
-            background-color: #f1f3f5;
-            color: #495057;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .back-button:hover {
-            background-color: #e9ecef;
-            color: #212529;
-        }
-
-        .error-message {
-            color: #dc3545;
-            background: #f8d7da;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 18px;
-        }
-
-        .field-error {
-            color: #dc3545;
-            font-size: 0.9em;
-            margin-top: 6px;
-        }
-
-        .input-error {
-            border: 1px solid #dc3545;
-        }
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+        h2 { font-size: 28px; margin-bottom: 28px; color: #111; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; color: #212529; }
+        input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; font-size: 15px; }
+        input:focus { outline: none; border-color: #adb5bd; }
+        button { border: none; cursor: pointer; font-family: Arial, sans-serif; }
+        .main-btn { display: block; width: 100%; box-sizing: border-box; margin-top: 18px; padding: 14px; text-align: center; text-decoration: none; background-color: #f1f3f5; color: #495057; border: 1px solid #ced4da; border-radius: 4px; font-size: 16px; font-weight: 600; }
+        .main-btn:hover { background-color: #e9ecef; }
+        .back-button-wrap { margin-bottom: 20px; }
+        .back-button { background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .back-button:hover { background-color: #e9ecef; color: #212529; }
+        .error-message { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 18px; }
+        .field-error { color: #dc3545; font-size: 0.9em; margin-top: 6px; }
+        .input-error { border: 1px solid #dc3545; }
+        .success-message { color: #0f5132; background: #d1e7dd; padding: 10px; border-radius: 4px; margin-bottom: 18px; font-size: 0.9em; margin-top: 6px; }
+        .username-check-group { display: flex; gap: 8px; }
+        .username-check-group input { flex: 1; }
+        .check-btn { padding: 12px 16px; background-color: #f1f3f5; color: #495057; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .check-btn:hover { background-color: #e9ecef; }
+        .check-btn:disabled { background-color: #dee2e6; color: #adb5bd; cursor: not-allowed; }
     </style>
 </head>
 <body>
 <div class="back-button-wrap">
-    <button type="button" class="back-button" onclick="location.href='/users/login'">
-        ← 이전 화면
-    </button>
+    <button type="button" class="back-button" onclick="location.href='/'">???댁쟾 ?붾㈃</button>
 </div>
 
-<h2>회원가입</h2>
+<h2>?뚯썝媛??/h2>
 
+<!-- 湲곗〈 errorMessage 諛⑹떇 -->
 <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
 
 <form th:action="@{/users/signup}" th:object="${user}" method="post">
-    <div class="form-group">
-        <label for="loginId">로그인 아이디</label>
-        <input type="text" id="loginId" th:field="*{loginId}" required>
+
+    <!-- ?꾩뿭 ?먮윭 硫붿떆吏 -->
+    <div th:if="${#fields.hasGlobalErrors()}" class="error-message">
+        <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
     </div>
 
     <div class="form-group">
-        <label for="username">아이디</label>
-        <input type="text" id="username" th:field="*{username}" required>
+        <label for="username">?꾩씠??/label>
+        <div class="username-check-group">
+            <input type="text" id="username" th:field="*{username}" required
+                   th:classappend="${#fields.hasErrors('username')} ? ' input-error' : ''">
+            <button type="button" id="checkUsernameBtn" class="check-btn" onclick="checkUsername()">以묐났 ?뺤씤</button>
+        </div>
+        <div id="usernameCheckResult" class="field-error" style="display: none;"></div>
+        <div th:if="${#fields.hasErrors('username')}" class="field-error" th:errors="*{username}"></div>
     </div>
 
     <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" th:field="*{password}" required>
+        <label for="password">鍮꾨?踰덊샇</label>
+        <input type="password" id="password" th:field="*{password}" required
+               placeholder="鍮꾨?踰덊샇??理쒖냼 8???댁긽?댁뼱???⑸땲??"
+               th:classappend="${#fields.hasErrors('password')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('password')}" class="field-error" th:errors="*{password}"></div>
     </div>
 
     <div class="form-group">
-        <label for="email">이메일</label>
-        <input type="email" id="email" th:field="*{email}" required>
+        <label for="confirmPassword">鍮꾨?踰덊샇 ?뺤씤</label>
+        <input type="password" id="confirmPassword" th:field="*{confirmPassword}" required
+               placeholder="鍮꾨?踰덊샇瑜??ㅼ떆 ?낅젰?댁＜?몄슂"
+               th:classappend="${#fields.hasErrors('confirmPassword')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('confirmPassword')}" class="field-error" th:errors="*{confirmPassword}"></div>
     </div>
 
     <div class="form-group">
-        <label for="nickname">닉네임</label>
-        <input type="text" id="nickname" th:field="*{nickname}" required>
+        <label for="name">?대쫫</label>
+        <input type="text" id="name" th:field="*{name}" required placeholder="?ㅻ챸???낅젰?댁＜?몄슂."
+               th:classappend="${#fields.hasErrors('name')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('name')}" class="field-error" th:errors="*{name}"></div>
     </div>
 
-    <button type="submit" class="main-btn">회원가입</button>
+    <div class="form-group">
+        <label for="email">?대찓??/label>
+        <input type="email" id="email" th:field="*{email}" required
+               th:classappend="${#fields.hasErrors('email')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('email')}" class="field-error" th:errors="*{email}"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="phoneNumber">?꾪솕踰덊샇</label>
+        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" required
+               placeholder="01012345678"
+               pattern="^010\d{8}$"
+               title="010?쇰줈 ?쒖옉?섎뒗 11?먮━ ?レ옄留??낅젰 媛?ν빀?덈떎 (?? 01012345678)"
+               th:classappend="${#fields.hasErrors('phoneNumber')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('phoneNumber')}" class="field-error" th:errors="*{phoneNumber}"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="nickname">?됰꽕??/label>
+        <input type="text" id="nickname" th:field="*{nickname}" required
+               th:classappend="${#fields.hasErrors('nickname')} ? ' input-error' : ''">
+        <div th:if="${#fields.hasErrors('nickname')}" class="field-error" th:errors="*{nickname}"></div>
+    </div>
+
+    <button type="submit" class="main-btn">?뚯썝媛??/button>
 </form>
+
+<script th:inline="javascript">
+    let lastCheckedUsername = '';
+    let isUsernameAvailable = false;
+
+    // ?꾩씠???낅젰媛?蹂寃???以묐났 ?뺤씤 ?곹깭 珥덇린??
+    document.getElementById('username').addEventListener('input', function() {
+        const resultDiv = document.getElementById('usernameCheckResult');
+        resultDiv.style.display = 'none';
+        resultDiv.textContent = '';
+        resultDiv.className = 'field-error';
+        isUsernameAvailable = false;
+        lastCheckedUsername = '';
+    });
+
+    // 以묐났 ?뺤씤 ?⑥닔
+    function checkUsername() {
+        const usernameInput = document.getElementById('username');
+        const username = usernameInput.value.trim();
+        const resultDiv = document.getElementById('usernameCheckResult');
+        const checkBtn = document.getElementById('checkUsernameBtn');
+
+        if (!username) {
+            resultDiv.textContent = '?꾩씠?붾? ?낅젰?댁＜?몄슂.';
+            resultDiv.className = 'field-error';
+            resultDiv.style.display = 'block';
+            isUsernameAvailable = false;
+            return;
+        }
+
+        checkBtn.disabled = true;
+
+        fetch(`/users/check-username?username=${encodeURIComponent(username)}`)
+            .then(response => {
+                if (!response.ok) {
+                    // HTTP ?곹깭 肄붾뱶? ?묐떟 ?띿뒪?몃? 肄섏넄???곸꽭??異쒕젰
+                    return response.text().then(text => {
+                        console.error('HTTP Error - Status:', response.status, 'StatusText:', response.statusText);
+                        console.error('Response Body:', text.substring(0, 500));
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('以묐났 ?뺤씤 ?깃났:', data);
+                resultDiv.textContent = data.message;
+                if (data.available) {
+                    resultDiv.className = 'success-message';
+                    isUsernameAvailable = true;
+                    lastCheckedUsername = username;
+                } else {
+                    resultDiv.className = 'field-error';
+                    isUsernameAvailable = false;
+                    lastCheckedUsername = '';
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                resultDiv.textContent = '以묐났 ?뺤씤 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎. (肄섏넄 ?뺤씤)';
+                resultDiv.className = 'field-error';
+                resultDiv.style.display = 'block';
+                isUsernameAvailable = false;
+            })
+            .finally(() => {
+                checkBtn.disabled = false;
+            });
+    }
+
+    // ???쒖텧 ??寃利?
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const usernameInput = document.getElementById('username');
+        const currentUsername = usernameInput.value.trim();
+
+        // 以묐났 ?뺤씤???섏? ?딆븯嫄곕굹, ?뺤씤 ???꾩씠?붾? 蹂寃쏀븳 寃쎌슦
+        if (!isUsernameAvailable || lastCheckedUsername !== currentUsername) {
+            e.preventDefault();
+            const resultDiv = document.getElementById('usernameCheckResult');
+            resultDiv.textContent = '?꾩씠??以묐났 ?뺤씤???댁＜?몄슂.';
+            resultDiv.className = 'field-error';
+            resultDiv.style.display = 'block';
+            usernameInput.focus();
+            return false;
+        }
+    });
+</script>
+
 </body>
 </html>

@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/policies/blocked-words")
+@RequestMapping({"/policies/blocked-words", "/api/policies/blocked-words"})
 public class BlockedWordController {
 
     // 금지어는 사용자별 정책 데이터이므로 모든 요청을 로그인 사용자 기준으로 처리한다.

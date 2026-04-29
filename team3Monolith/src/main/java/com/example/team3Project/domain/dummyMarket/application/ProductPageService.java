@@ -4,12 +4,12 @@ import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProduct;
 import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductImage;
 import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductImage.ImageType;
 import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductOption;
-import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductRepository;
-import com.example.team3Project.domain.dummyMarket.dao.SourcingRepository;
+import com.example.team3Project.domain.dummyMarket.dao.DummyMarketCoupangProductRepository;
 import com.example.team3Project.domain.dummyMarket.dto.ProductListPageDto;
 import com.example.team3Project.domain.dummyMarket.dto.ProductPageDto;
 import com.example.team3Project.domain.dummyMarket.dto.ProductPageDto.OptionDto;
 import com.example.team3Project.domain.dummyMarket.dto.ProductPageDto.ProductSummaryDto;
+import com.example.team3Project.domain.sourcing.repository.SourcingRepository;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.http.Method;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductPageService {
 
-    private final DummyCoupangProductRepository productRepository;
+    private final DummyMarketCoupangProductRepository productRepository;
     private final SourcingRepository sourcingRepository;
     private final MinioClient minioClient;
 
@@ -105,7 +105,7 @@ public class ProductPageService {
                     .map(this::resolveRawImageUrl)
                     .filter(url -> url != null && !url.isBlank())
                     .distinct()
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         Map<String, String> optionImageMap = images.stream()

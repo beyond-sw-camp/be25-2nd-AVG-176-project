@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>회원 탈퇴</title>
+    <title>?뚯썝 ?덊눜</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
         h2 { text-align: center; color: #333; }
@@ -30,40 +30,41 @@
 <body>
     <div class="back-button-wrap">
         <button type="button" class="back-button" onclick="location.href='/'">
-            ← 이전 화면
+            ???댁쟾 ?붾㈃
         </button>
     </div>
-    <h2>회원 탈퇴</h2>
+    <h2>?뚯썝 ?덊눜</h2>
     
     <div class="warning-box">
-        <div class="warning-title">주의사항</div>
+        <div class="warning-title">二쇱쓽?ы빆</div>
         <div class="warning-text">
-            회원 탈퇴 시 계정과 관련된 모든 데이터가 삭제되며,<br>
-            이 작업은 되돌릴 수 없습니다.
+            ?뚯썝 ?덊눜 ??怨꾩젙怨?愿?⑤맂 紐⑤뱺 ?곗씠?곌? ??젣?섎ŉ,<br>
+            ???묒뾽? ?섎룎由????놁뒿?덈떎.
         </div>
     </div>
     
     <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}">
-        에러 메시지
+        ?먮윭 硫붿떆吏
     </div>
     
     <form th:action="@{/users/delete}" th:object="${withdrawRequest}" method="post">
         <div class="form-group">
-            <label for="password">비밀번호 확인</label>
+            <label for="password">鍮꾨?踰덊샇 ?뺤씤</label>
             <input type="password" id="password" th:field="*{password}" 
                    th:class="${#fields.hasErrors('password')} ? 'field-error' : ''" 
-                   placeholder="현재 비밀번호를 입력하세요" required>
+                   placeholder="?꾩옱 鍮꾨?踰덊샇瑜??낅젰?섏꽭?? required>
             <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
-                비밀번호 오류
+                鍮꾨?踰덊샇 ?ㅻ쪟
             </div>
         </div>
         
         <div class="btn-group">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('정말로 탈퇴하시겠습니까?');">
-                탈퇴하기
+            <button type="submit" class="btn btn-danger" onclick="return confirm('?뺣쭚濡??덊눜?섏떆寃좎뒿?덇퉴?');">
+                ?덊눜?섍린
             </button>
-            <a th:href="@{/users/me}" class="btn btn-secondary">취소</a>
+            <a th:href="@{/users/me}" class="btn btn-secondary">痍⑥냼</a>
         </div>
     </form>
 </body>
 </html>
+

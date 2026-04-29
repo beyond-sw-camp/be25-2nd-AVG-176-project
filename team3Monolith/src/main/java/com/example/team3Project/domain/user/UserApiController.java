@@ -1,19 +1,17 @@
 package com.example.team3Project.domain.user;
 
-import com.example.team3Project.domain.user.dto.PasswordResetCodeRequest;
-import com.example.team3Project.domain.user.dto.PasswordResetRequest;
-import com.example.team3Project.domain.user.dto.PasswordResetVerifyRequest;
+import com.example.team3Project.domain.user.dto.PasswordChangeRequest;
+import com.example.team3Project.domain.user.dto.SignupRequest;
 import com.example.team3Project.domain.user.dto.UserResponse;
-import com.example.team3Project.domain.user.dto.UserUpdateRequest;
-import com.example.team3Project.domain.user.dto.UserWithdrawRequest;
+import com.example.team3Project.domain.user.dto.UserUpdateFormRequest;
 import com.example.team3Project.global.annotation.LoginUser;
-import jakarta.servlet.http.Cookie;
+import com.example.team3Project.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,93 +19,231 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @RestController
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
-@RequestMapping("/user")
-// Vue 같은 분리 프론트가 사용하는 사용자 JSON API를 제공한다.
 public class UserApiController {
-
-    private static final String ACCESS_TOKEN_COOKIE = "token";
+    // 프론트(Vue)가 직접 호출하는 사용자 API 진입점.
+    // 회원가입/로그아웃/내 정보 조회 등 "로그인 상태" 관련 응답 규칙을 여기서 맞춘다.
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    @PostMapping("/reset-pw/code")
-    public ResponseEntity<Void> sendPasswordResetCode(
-            @Valid @RequestBody PasswordResetCodeRequest request) {
-        userService.sendPasswordResetCode(request.getLoginIdOrEmail());
-        return ResponseEntity.ok().build();
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "비밀번호와 비밀번호 확인이 일치하지 않습니다."
+            ));
+        }
+
+        try {
+            User user = userService.signup(request);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "회원가입이 완료되었습니다.",
+                    "userId", user.getId()
+            ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
     }
 
-    @PostMapping("/reset-pw/verify")
-    public ResponseEntity<Void> verifyPasswordResetCode(
-            @Valid @RequestBody PasswordResetVerifyRequest request) {
-        userService.verifyPasswordResetCode(request.getLoginIdOrEmail(), request.getCode());
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/reset-pw")
-    public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody PasswordResetRequest request) {
-        userService.resetPassword(
-                request.getLoginIdOrEmail(),
-                request.getCode(),
-                request.getNewPassword());
-        return ResponseEntity.ok().build();
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsername(String username) {
+        boolean available = userService.isUsernameAvailable(username);
+        return ResponseEntity.ok(Map.of(
+                "available", available,
+                "message", available ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다."
+        ));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
-        // REST 로그아웃도 MVC와 같은 방식으로 JWT 쿠키를 만료시킨다.
-        expireAccessTokenCookie(response);
-        log.info("로그아웃 완료");
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie deleteCookie = jwtUtil.deleteJwtCookie();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "로그아웃되었습니다."
+        ));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser(@LoginUser User user) {
+    public ResponseEntity<?> me(@LoginUser User user) {
+        // 첫 화면에서 호출되는 엔드포인트.
+        // 비로그인도 예외가 아닌 정상 흐름으로 보기 위해 authenticated=false를 200으로 반환한다.
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.ok(Map.of(
+                    "authenticated", false
+            ));
         }
-        // 프론트 앱이 시작될 때 현재 로그인 사용자 정보를 확인할 수 있도록 내려준다.
+
+        log.info("내 정보 조회 성공: userId={}, username={}", user.getId(), user.getUsername());
         return ResponseEntity.ok(UserResponse.from(user));
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<UserResponse> updateUser(
-            @LoginUser User user,
-            @Valid @RequestBody UserUpdateRequest request) {
-
+    @PutMapping("/me")
+    public ResponseEntity<?> updateMe(@LoginUser User user,
+                                      @Valid @RequestBody UserUpdateFormRequest request) {
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            log.warn("인증되지 않은 사용자의 정보 수정 시도");
+            return ResponseEntity.status(401).body(Map.of(
+                    "error", "로그인이 필요합니다.",
+                    "code", "UNAUTHORIZED"
+            ));
         }
 
-        User updatedUser = userService.updateUser(user.getId(), request);
-        return ResponseEntity.ok(UserResponse.from(updatedUser));
+        try {
+            User updatedUser = userService.updateUserInfo(user.getId(), request);
+            log.info("사용자 정보 수정 성공: userId={}", user.getId());
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "정보가 성공적으로 수정되었습니다.",
+                    "user", UserResponse.from(updatedUser)
+            ));
+        } catch (IllegalArgumentException e) {
+            log.warn("사용자 정보 수정 실패: userId={}, reason={}", user.getId(), e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> deleteUser(
-            @LoginUser User user,
-            @Valid @RequestBody UserWithdrawRequest request,
-            HttpServletResponse response) {
-
+    @PutMapping("/me/change-password")
+    public ResponseEntity<?> changePassword(@LoginUser User user,
+                                            @Valid @RequestBody PasswordChangeRequest request) {
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            log.warn("인증되지 않은 사용자의 비밀번호 변경 시도");
+            return ResponseEntity.status(401).body(Map.of(
+                    "error", "로그인이 필요합니다.",
+                    "code", "UNAUTHORIZED"
+            ));
         }
 
-        userService.deleteUser(user.getId(), request.getPassword());
-        // 회원 탈퇴 후에는 남아 있는 access token 쿠키도 즉시 제거한다.
-        expireAccessTokenCookie(response);
-        log.info("회원 탈퇴 완료: userId={}", user.getId());
-        return ResponseEntity.ok().build();
+        // 새 비밀번호 일치 확인
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "새 비밀번호와 확인 비밀번호가 일치하지 않습니다."
+            ));
+        }
+
+        try {
+            userService.changePassword(user.getId(), request.getCurrentPassword(), request.getNewPassword());
+            log.info("비밀번호 변경 성공: userId={}", user.getId());
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "비밀번호가 성공적으로 변경되었습니다."
+            ));
+        } catch (IllegalArgumentException e) {
+            log.warn("비밀번호 변경 실패: userId={}, reason={}", user.getId(), e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
     }
 
-    private void expireAccessTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findId(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "이메일을 입력해주세요."
+            ));
+        }
+
+        try {
+            List<String> loginIds = userService.findAllLoginIdsByEmail(email);
+
+            if (loginIds.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "success", false,
+                        "message", "일치하는 회원 정보가 없습니다."
+                ));
+            }
+
+            String message = loginIds.size() == 1
+                    ? "회원님의 아이디를 찾았습니다."
+                    : "해당 이메일로 가입된 아이디가 " + loginIds.size() + "개 있습니다.";
+
+            log.info("아이디 찾기 성공: email={}, count={}", email, loginIds.size());
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", message,
+                    "loginIds", loginIds
+            ));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("아이디 찾기 실패: email={}, reason={}", email, e.getMessage());
+            return ResponseEntity.status(404).body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/reset-pw")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String loginId = request.get("loginId");
+        String email = request.get("email");
+
+        log.debug("API 비밀번호 재설정 요청: loginId={}, email={}", loginId, email);
+
+        if (loginId == null || loginId.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "아이디를 입력해주세요."
+            ));
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "이메일을 입력해주세요."
+            ));
+        }
+
+        try {
+            userService.resetPassword(loginId, email);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "입력하신 이메일로 임시 비밀번호가 전송되었습니다."
+            ));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("API 비밀번호 재설정 실패: loginId={}, email={}, reason={}", loginId, email, e.getMessage());
+            return ResponseEntity.status(404).body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        } catch (IllegalStateException e) {
+            // 이메일 발송 실패 등 비즈니스 예외
+            log.error("API 비밀번호 재설정 - 이메일 발송 실패: loginId={}, email={}, reason={}", loginId, email, e.getMessage());
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", e.getMessage(),
+                    "errorCode", "EMAIL_SEND_FAILED"
+            ));
+        } catch (RuntimeException e) {
+            // 기타 예외 (DB 오류 등)
+            log.error("API 비밀번호 재설정 - 서버 오류: loginId={}, email={}, error={}", loginId, email, e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "비밀번호 재설정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                    "errorCode", "INTERNAL_ERROR"
+            ));
+        }
     }
 }

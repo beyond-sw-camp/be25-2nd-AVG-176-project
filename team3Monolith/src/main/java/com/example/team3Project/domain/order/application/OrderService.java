@@ -2,7 +2,7 @@ package com.example.team3Project.domain.order.application;
 
 import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProduct;
 import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductOption;
-import com.example.team3Project.domain.dummyMarket.dao.DummyCoupangProductRepository;
+import com.example.team3Project.domain.dummyMarket.dao.DummyMarketCoupangProductRepository;
 import com.example.team3Project.domain.order.dao.Order;
 import com.example.team3Project.domain.order.dao.OrderRepository;
 import com.example.team3Project.domain.order.dto.FailedOrderResponse;
@@ -15,6 +15,8 @@ import com.example.team3Project.domain.settlement.dao.Card;
 import com.example.team3Project.domain.settlement.dao.Payment;
 import com.example.team3Project.domain.settlement.dao.PaymentRepository;
 import com.example.team3Project.domain.settlement.enums.PaymentStatus;
+import com.example.team3Project.domain.settlement.util.CardNumberUtil;
+import com.example.team3Project.domain.settlement.util.PaymentFailureReasonUtil;
 import com.example.team3Project.domain.shipment.enums.Shipment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +33,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final PaymentService paymentService;
-    private final DummyCoupangProductRepository productRepository;
+    private final DummyMarketCoupangProductRepository productRepository;
     private final PaymentRepository paymentRepository;
 
     @Transactional
@@ -219,10 +221,10 @@ public class OrderService {
                 .status(order.getStatus())
                 .autoOrderStatus(order.getAutoOrderStatus())
                 .paymentFailureCode(paymentStatus)
-                .paymentFailureReason(toPaymentFailureReason(paymentStatus))
+                .paymentFailureReason(PaymentFailureReasonUtil.toKoreanMessage(paymentStatus))
                 .cardId(card != null ? card.getId() : null)
                 .cardType(card != null ? card.getCardType() : null)
-                .cardLast4(card != null ? getCardLast4(card.getCardNumber()) : null)
+                .cardLast4(card != null ? CardNumberUtil.last4(card.getCardNumber()) : null)
                 .cardActive(card != null ? card.isActive() : null)
                 .cardLimit(card != null ? card.getCardLimit() : null)
                 .cardBalance(card != null ? card.getBalance() : null)

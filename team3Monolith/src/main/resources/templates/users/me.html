@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>내 정보</title>
+    <title>???뺣낫</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
         h2 { text-align: center; color: #333; }
@@ -27,40 +27,45 @@
 <body>
     <div class="back-button-wrap">
         <button type="button" class="back-button" onclick="location.href='/'">
-            ← 이전 화면
+            ???댁쟾 ?붾㈃
         </button>
     </div>
 
-    <h2>내 정보</h2>
+    <h2>???뺣낫</h2>
     
     <div class="info-card">
         <div class="info-row">
-            <span class="label">로그인 ID</span>
-            <span class="value" th:text="${user.loginId}">loginId</span>
-        </div>
-        <div class="info-row">
-            <span class="label">사용자명</span>
+            <span class="label">濡쒓렇??ID</span>
             <span class="value" th:text="${user.username}">username</span>
         </div>
         <div class="info-row">
-            <span class="label">닉네임</span>
+            <span class="label">?ъ슜?먮챸</span>
+            <span class="value" th:text="${user.name}">name</span>
+        </div>
+        <div class="info-row">
+            <span class="label">?됰꽕??/span>
             <span class="value" th:text="${user.nickname}">nickname</span>
         </div>
         <div class="info-row">
-            <span class="label">이메일</span>
+            <span class="label">?대찓??/span>
             <span class="value" th:text="${user.email}">email</span>
+        </div>
+        <div class="info-row">
+            <span class="label">?꾪솕踰덊샇</span>
+            <span class="value" th:text="${user.phoneNumber}">phoneNumber</span>
         </div>
     </div>
     
     <div class="btn-group">
-        <a th:href="@{/users/update}" class="btn btn-primary">정보 수정</a>
-        <a th:href="@{/users/delete}" class="btn btn-danger">회원 탈퇴</a>
+        <a th:href="@{/users/update}" class="btn btn-primary">?뺣낫 ?섏젙</a>
+        <a th:href="@{/users/delete}" class="btn btn-danger">?뚯썝 ?덊눜</a>
     </div>
     
     <div class="btn-group" style="margin-top: 10px;">
         <form th:action="@{/users/logout}" method="post" style="flex: 1;">
-            <button type="submit" class="btn btn-secondary" style="width: 100%;">로그아웃</button>
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">濡쒓렇?꾩썐</button>
         </form>
     </div>
 </body>
 </html>
+

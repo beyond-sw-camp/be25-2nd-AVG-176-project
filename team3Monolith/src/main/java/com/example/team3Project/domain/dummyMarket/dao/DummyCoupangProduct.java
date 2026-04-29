@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // dummy_coupang_product 테이블 매핑 엔티티
-@Entity
+@Entity(name = "DummyMarketCoupangProduct")
 @Table(name = "dummy_coupang_product")
 @Getter
 public class DummyCoupangProduct {

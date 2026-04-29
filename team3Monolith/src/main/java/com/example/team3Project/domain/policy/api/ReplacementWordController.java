@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/policies/replacement-words")
+@RequestMapping({"/policies/replacement-words", "/api/policies/replacement-words"})
 public class ReplacementWordController {
 
     // 치환어도 사용자별 정책 데이터이므로 로그인 사용자 기준으로만 다룬다.

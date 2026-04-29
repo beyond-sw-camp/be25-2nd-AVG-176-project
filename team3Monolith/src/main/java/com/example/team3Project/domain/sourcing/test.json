@@ -1,28 +1,91 @@
 {
-  "source_url": "https://www.amazon.com/example-product",
-  "site_name": "AMAZON",
-  "product_id": "B07XJ8C8F5",
-  "data": {
-    "title": "Wireless Noise-Canceling Headphones",
-    "original_price": 299.00,
+  "asin": "B000OV0S84",
+  "best_seller": false,
+  "brand": "Coca-Cola Zero",
+  "currency": "USD",
+  "is_amazons_choice": true,
+  "is_prime": false,
+  "is_sponsored": false,
+  "manufacturer": "",
+  "pos": 1,
+  "price": 8.42,
+  "price_per_unit": {
     "currency": "USD",
-    "brand": "Sony",
-    "main_image": "https://image.amazon.com/main.jpg",
-    "description_images": [
-      "https://image.amazon.com/desc1.jpg",
-      "https://image.amazon.com/desc2.jpg"
-    ],
-    "options": [
-      {
-        "name": "Color",
-        "values": ["Black", "Silver", "Blue"]
-      },
-      {
-        "name": "Size",
-        "values": ["Standard", "Large"]
-      }
-    ],
-    "stock_status": "IN_STOCK"
+    "price": 0.06,
+    "unit": "fluid ounce"
   },
-  "collected_at": "2024-03-20T10:00:00Z"
+  "price_upper": 8.42,
+  "pricing_count": 1,
+  "rating": 4.6,
+  "reviews_count": 9300,
+  "sales_volume": "40K+ bought in past month",
+  "shipping_information": "FREE delivery Fri, Mar 20 on $35 of items shipped by AmazonOr fastest delivery Tomorrow, Mar 16",
+  "title": "Sugar Soda, 12 fl oz Cans, 12 Pack - Classic Cola Soft Drink Fridge Pack",
+  "url": "/Coca-Cola-Zero-Sugar-Fridgepack-Pack/dp/B000OV0S84/ref=sr_1_1?dib=eyJ2IjoiMSJ9.JbQ2DmcfAcg-9HMUEJGesP12qZ1rF0MoM6qKdFLOGQT1xQV4CS82n38pu3wjH0hFCTxMGIP-W2ifd3h663pxa56hgDLYJelFSQGcLcXrtnrKB4tkYhfo5BSnbLuMwefhnXkAmDOMyjCcp9bozjIv9KD7lfjWuCMGcu0B_-xrJJhNpJlRl0BWbL6q0Cz4FzeE4PmUByT_VRUKPgLZ06tUEmLvDGtHbq8HKDfcmEO6Iw2gKiwVxuB6zv4bRpf3qvNFR6yB16-VWr0kSRnLPVB5zOb2qUZcNKamOqLAo0vg9KM.zYMPZZOSn9cMXTgEoQNXlQZe97-C7jhm965706CKoHQ&dib_tag=se&keywords=Coca-Cola+Zero+Sugar+Soda&qid=1773622568&sr=8-1",
+  "url_image": "https://m.media-amazon.com/images/I/71dPc-6s3QL._AC_UL320_.jpg",
+  "images": [
+    "https://m.media-amazon.com/images/I/71dPc-6s3QL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/81JqPbFHfUL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/81TXszwQ7mL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/61YU2e4nZ7L._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/61orT81UHBL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/71-OG9sGbWL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/71l6sgqGYJL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/71WccXlBcjL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/71HhPIhlgPL._SL1500_.jpg",
+    "https://m.media-amazon.com/images/I/71JfzdyfJjL._SL1500_.jpg"
+  ],
+  "variation": [
+    {
+      "asin": "B01C2I13CG",
+      "dimensions": {
+        "Flavor Name": "Coke Zero Caffeine Free",
+        "Size": "12 Fl Oz (Pack of 12)"
+      },
+      "selected": false,
+      "price": 4.68,
+      "currency": "USD",
+      "stock": "Currently unavailable. We don't know when or if this item will be back in stock. Add to List Added to Unable to add item to List. Please try again. Sorry, there was a problem. There was an error retrieving your Wish Lists. Please try again. Sorry, there was a problem. List unavailable.",
+      "rating": 4.7,
+      "reviews_count": 623,
+      "images": [
+        "https://m.media-amazon.com/images/I/71FBcWNG4RL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81pPiezkOML._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71Rv61Z1O7L._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81CxGmbKa7L._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/61ZOC+SeRKL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/61g0JkZBvmL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71p3VmK72AL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71Y+mk7O4iL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81LXXGoniLL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71PMNaoztqL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71LEGz+WzcL._SL1500_.jpg"
+      ]
+    },
+    {
+      "asin": "B000OV0S84",
+      "dimensions": {
+        "Flavor Name": "Coca-Cola Zero Sugar",
+        "Size": "12 fl oz (Pack of 12)"
+      },
+      "selected": true,
+      "price": 8.42,
+      "currency": "USD",
+      "stock": "In Stock",
+      "rating": 4.6,
+      "reviews_count": 9360,
+      "images": [
+        "https://m.media-amazon.com/images/I/71dPc-6s3QL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81JqPbFHfUL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/81TXszwQ7mL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/61YU2e4nZ7L._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/61orT81UHBL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71-OG9sGbWL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71l6sgqGYJL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71WccXlBcjL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71HhPIhlgPL._SL1500_.jpg",
+        "https://m.media-amazon.com/images/I/71JfzdyfJjL._SL1500_.jpg"
+      ]
+    }
+  ]
 }

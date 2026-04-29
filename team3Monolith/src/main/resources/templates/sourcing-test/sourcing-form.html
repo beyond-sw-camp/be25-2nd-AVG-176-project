@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>자동 소싱</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; color: #333; }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+
+        h1 { font-size: 1.6rem; margin-bottom: 6px; color: #1a1a2e; }
+        .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
+
+        .section { margin-bottom: 28px; }
+        .section label { font-weight: 600; display: block; margin-bottom: 10px; font-size: 0.95rem; }
+
+        .tag-input-wrap {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .tag-input-wrap input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        .tag-input-wrap input:focus { outline: none; border-color: #4361ee; }
+
+        .btn-add {
+            padding: 10px 18px;
+            background: #4361ee;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .btn-add:hover { background: #3451d1; }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 36px;
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef0ff;
+            color: #4361ee;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+        .tag.banned { background: #fff0f0; color: #e63946; }
+        .tag button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            color: inherit;
+            padding: 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #4361ee;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover { background: #3451d1; }
+        .btn-submit:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* 결과 영역 */
+        #result-area { margin-top: 32px; display: none; }
+        #result-area h2 { font-size: 1.1rem; margin-bottom: 14px; color: #1a1a2e; }
+
+        .result-meta {
+            background: #f0f4ff;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .result-meta span { font-weight: 600; color: #4361ee; }
+
+        .result-items { display: flex; flex-direction: column; gap: 14px; }
+        .result-card {
+            border: 1.5px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 16px 18px;
+            font-size: 0.9rem;
+        }
+        .result-card .product-title { font-weight: 600; font-size: 1rem; margin-bottom: 6px; }
+        .result-card .product-asin { color: #888; font-size: 0.82rem; margin-bottom: 8px; }
+        .result-card .product-price { color: #2d6a4f; font-weight: 600; }
+
+        .json-block {
+            margin-top: 12px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .json-block summary {
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4361ee;
+            user-select: none;
+        }
+        .json-block summary:hover { text-decoration: underline; }
+        .json-block pre {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            overflow-x: auto;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .full-json-wrap {
+            margin-top: 20px;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .full-json-wrap summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+        }
+        .full-json-wrap pre {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            line-height: 1.45;
+            overflow: auto;
+            max-height: 560px;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 30px 0;
+            color: #4361ee;
+            font-weight: 600;
+        }
+        .spinner {
+            display: inline-block;
+            width: 22px; height: 22px;
+            border: 3px solid #c8d0ff;
+            border-top-color: #4361ee;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-msg {
+            background: #fff0f0;
+            color: #e63946;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .pipeline-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .pipeline-badge.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .pipeline-badge.failed  { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .pipeline-badge.error   { background: #fff0f0; color: #e63946; border: 1px solid #fecaca; }
+        .pipeline-errors { font-size: 0.8rem; color: #9a3412; margin-top: 4px; }
+        #save-summary { display: none; }
+
+        .radio-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 20px;
+            align-items: center;
+        }
+        .radio-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .radio-row input[type="radio"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            accent-color: #4361ee;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>자동 소싱</h1>
+    <p class="subtitle">계절성을 입력하면 Gemini가 키워드를 추천하고 아마존에서 상품을 가져옵니다.</p>
+    <p class="subtitle" style="margin-top:-12px;font-size:0.82rem;color:#666;line-height:1.45;">
+        POST 요청은 <strong>API Gateway에서 JWT 검증</strong>을 거칩니다. JWT는 <code>HttpOnly</code> 쿠키(<code>token</code>)로만 전달되며,
+        아래 fetch에 <code>credentials: 'include'</code>가 있으면 브라우저가 같은 사이트 쿠키를 자동으로 보냅니다.
+        <span th:if="${sourcingApiOrigin != null and !#strings.isEmpty(sourcingApiOrigin)}">
+            (8080에서 이 페이지를 열었을 때 API 베이스: <code th:text="${sourcingApiOrigin}">http://localhost:9000</code>)
+        </span>
+    </p>
+
+    <!-- 계절성 -->
+    <div class="section">
+        <label>계절성</label>
+        <div class="tag-input-wrap">
+            <input type="text" id="season-input" placeholder="예: 1월, 여름, 크리스마스" />
+            <button class="btn-add" type="button" onclick="addTag('season')">추가</button>
+        </div>
+        <div class="tags" id="season-tags"></div>
+    </div>
+
+    <!-- 금지어 -->
+    <div class="section">
+        <label>금지어</label>
+        <div class="tag-input-wrap">
+            <input type="text" id="banned-input" placeholder="예: plastic, cheap" />
+            <button class="btn-add" type="button" onclick="addTag('banned')">추가</button>
+        </div>
+        <div class="tags" id="banned-tags"></div>
+    </div>
+
+    <!-- 시즌당 가져올 상품 수 -->
+    <div class="section">
+        <label>가져올 상품 수 (계절성 태그당)</label>
+        <div class="radio-row" id="item-count-row">
+            <label><input type="radio" name="item-count" value="1" checked /> 1개</label>
+            <label><input type="radio" name="item-count" value="2" /> 2개</label>
+            <label><input type="radio" name="item-count" value="3" /> 3개</label>
+            <label><input type="radio" name="item-count" value="5" /> 5개</label>
+        </div>
+    </div>
+   
+    <button class="btn-submit" id="btn-submit" type="button" onclick="submitSourcing()">소싱 시작</button>
+
+    <div id="loading"><span class="spinner"></span>소싱 진행 중... (시간이 걸릴 수 있습니다)</div>
+    <div class="error-msg" id="error-msg"></div>
+
+    <!-- 결과 -->
+    <div id="result-area">
+        <h2>소싱 결과</h2>
+        <div class="result-meta" id="result-meta"></div>
+        <div id="save-summary"></div>
+        <div class="result-actions" id="result-actions" style="display: none;">
+            <button type="button" class="btn-save-all" id="btn-save-all">전체 DB 저장</button>
+        </div>
+        <div class="result-items" id="result-items"></div>
+        <div class="full-json-wrap" id="full-json-wrap" style="display: none;">
+            <details>
+                <summary>전체 소싱 결과 JSON (test.json 형태 배열)</summary>
+                <pre id="full-json-pre"></pre>
+            </details>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.SOURCING_CFG = {
+        apiOrigin: /*[[${sourcingApiOrigin}]]*/ ''
+    };
+    /*]]>*/
+</script>
+<script>
+    const seasons = [];
+    const bannedWords = [];
+    let lastResults = [];
+
+    function sourcingApiUrl(path) {
+        const o = (window.SOURCING_CFG && window.SOURCING_CFG.apiOrigin) || '';
+        if (!path.startsWith('/')) path = '/' + path;
+        return o ? (o.replace(/\/$/, '') + path) : path;
+    }
+
+    function sourcingAuthHeaders() {
+        return { 'Content-Type': 'application/json' };
+    }
+
+    function addTag(type) {
+        const inputId = type === 'season' ? 'season-input' : 'banned-input';
+        const tagsId  = type === 'season' ? 'season-tags'  : 'banned-tags';
+        const arr     = type === 'season' ? seasons          : bannedWords;
+        const cssClass = type === 'season' ? 'tag' : 'tag banned';
+
+        const input = document.getElementById(inputId);
+        const val = input.value.trim();
+        if (!val || arr.includes(val)) { input.value = ''; return; }
+
+        arr.push(val);
+        input.value = '';
+
+        const tagEl = document.createElement('span');
+        tagEl.className = cssClass;
+        tagEl.dataset.val = val;
+        tagEl.innerHTML = `${val} <button type="button" onclick="removeTag('${type}', '${val}', this)">×</button>`;
+        document.getElementById(tagsId).appendChild(tagEl);
+    }
+
+    function removeTag(type, val, btn) {
+        const arr = type === 'season' ? seasons : bannedWords;
+        const idx = arr.indexOf(val);
+        if (idx !== -1) arr.splice(idx, 1);
+        btn.parentElement.remove();
+    }
+
+    // Enter 키로도 추가
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('season-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTag('season'); });
+        document.getElementById('banned-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTag('banned'); });
+    });
+
+    async function submitSourcing() {
+        if (seasons.length === 0) {
+            showError('계절성을 최소 1개 이상 입력해주세요.');
+            return;
+        }
+
+        hideError();
+        setLoading(true);
+
+        try {
+            const itemCountEl = document.querySelector('input[name="item-count"]:checked');
+            const item_count = itemCountEl ? parseInt(itemCountEl.value, 10) : 1;
+            const resp = await fetch(sourcingApiUrl('/sourcing/auto'), {
+                method: 'POST',
+                headers: sourcingAuthHeaders(),
+                body: JSON.stringify({
+                    seasons,
+                    banned_words: bannedWords,
+                    item_count
+                }),
+                credentials: 'include'
+            });
+
+            if (!resp.ok) {
+                const err = await resp.text();
+                throw new Error(err || '서버 오류가 발생했습니다.');
+            }
+            // 파이썬 서버에서의 응답 코드랑 그에 대한 소싱 결과들.
+            const data = await resp.json();
+            renderResult(data);
+        } catch (e) {
+            showError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /** Spring SourcingDTO(@JsonProperty)에 맞게 보정: url_image 누락 시 images[0] 사용 */
+    function normalizeProductForDb(item) {
+        const o = JSON.parse(JSON.stringify(item));
+        if (!o.url_image && Array.isArray(o.images) && o.images.length > 0) {
+            // 메인 썸네일 없을떄 첫번째 이미지를 메인 썸네일로 설정.
+            o.url_image = o.images[0];
+        }
+        return o;
+    }
+    // 파싱후 데이터가 잘 들어왔는지 확인하기.
+    async function postSourcingUpload(payload) {
+        const resp = await fetch(sourcingApiUrl('/sourcing/upload'), {
+            method: 'POST',
+            headers: sourcingAuthHeaders(),
+            body: JSON.stringify(payload),
+            credentials: 'include',
+        });
+        const text = await resp.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            throw new Error(text || resp.statusText || '응답 파싱 실패');
+        }
+        if (!resp.ok) {
+            throw new Error(data.message || text || resp.statusText);
+        }
+        return data;
+    }
+    // 정규화 후 DB에 저장하는 함수.
+    async function saveOneToDb(item, statusEl, btnEl) {
+        btnEl.disabled = true;
+        statusEl.textContent = '저장 중...';
+        statusEl.className = 'save-msg';
+        try {
+            const r = await postSourcingUpload(normalizeProductForDb(item));
+            if (r.normalized) {
+                statusEl.textContent = 'DB 저장·정규화 완료 (상품 등록 가능)' + (r.sourcingId != null ? ` · id ${r.sourcingId}` : '');
+                statusEl.className = 'save-msg ok';
+            } else if (r.status === 'saved_normalization_failed') {
+                statusEl.textContent = '저장됨, 정규화 실패: ' + (r.normalizationError || r.message || '') + (r.sourcingId != null ? ` · id ${r.sourcingId}` : '');
+                statusEl.className = 'save-msg err';
+            } else {
+                statusEl.textContent = (r.errors || [r.message || '검증 실패']).join(' · ');
+                statusEl.className = 'save-msg err';
+            }
+        } catch (e) {
+            statusEl.textContent = e.message;
+            statusEl.className = 'save-msg err';
+        }
+        btnEl.disabled = false;
+    }
+// 전체 데이터를 DB에 저장하는 함수.
+    async function saveAllToDb() {
+        const btn = document.getElementById('btn-save-all');
+        const summaryEl = document.getElementById('save-summary');
+        if (!lastResults.length) return;
+
+        btn.disabled = true;
+        summaryEl.style.display = 'none';
+
+        let ok = 0;
+        const fail = [];
+
+        for (const item of lastResults) {
+            try {
+                const r = await postSourcingUpload(normalizeProductForDb(item));
+                if (r.normalized) ok++;
+                else if (r.status === 'saved_normalization_failed') {
+                    fail.push({ asin: item.asin || '-', msg: '정규화 실패: ' + (r.normalizationError || r.message || '') });
+                } else {
+                    fail.push({ asin: item.asin || '-', msg: (r.errors || [r.message || '검증 실패']).join(' · ') });
+                }
+            } catch (e) {
+                fail.push({ asin: item.asin || '-', msg: e.message });
+            }
+        }
+
+        summaryEl.className = fail.length ? 'has-errors' : '';
+        summaryEl.style.display = 'block';
+        summaryEl.innerHTML =
+            `<strong>일괄 저장·정규화 결과:</strong> 성공 ${ok}건` +
+            (fail.length ? `, 실패 ${fail.length}건<br><ul style="margin:8px 0 0 18px;">${fail.map(f => `<li>${escapeHtml(f.asin)} — ${escapeHtml(f.msg)}</li>`).join('')}</ul>` : '');
+
+        btn.disabled = false;
+    }
+    // 소싱 결과값들 화면에 렌더링하는 함수.
+    function renderResult(data) {
+        const metaEl = document.getElementById('result-meta');
+        const itemsEl = document.getElementById('result-items');
+        const actionsEl = document.getElementById('result-actions');
+        const summaryEl = document.getElementById('save-summary');
+
+        lastResults = data.results || [];
+        summaryEl.style.display = 'none';
+        summaryEl.textContent = '';
+        summaryEl.className = '';
+
+        const perSeason = data.item_count != null ? `시즌당 <span>${data.item_count}</span>개 · ` : '';
+        metaEl.innerHTML =
+            `${perSeason}추천 키워드: <span>${(data.keywords || []).join(', ')}</span> &nbsp;|&nbsp; 처리 시간: <span>${data.elapsed ?? '-'}초</span>`;
+
+        actionsEl.style.display = lastResults.length ? 'flex' : 'none';
+        const saveAllBtn = document.getElementById('btn-save-all');
+        saveAllBtn.replaceWith(saveAllBtn.cloneNode(true));
+        document.getElementById('btn-save-all').addEventListener('click', saveAllToDb);
+
+        itemsEl.innerHTML = '';
+        lastResults.forEach(item => {
+            const price = item.price ? `$${item.price}` : '가격 없음';
+            const safeJson = JSON.stringify(item, null, 2)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+
+            const title = document.createElement('div');
+            title.className = 'product-title';
+            title.textContent = item.title || '제목 없음';
+
+            const asinRow = document.createElement('div');
+            asinRow.className = 'product-asin';
+            asinRow.textContent = 'ASIN: ' + (item.asin || '-');
+
+            const priceRow = document.createElement('div');
+            priceRow.className = 'product-price';
+            priceRow.textContent = price;
+
+            const btnSave = document.createElement('button');
+            btnSave.type = 'button';
+            btnSave.className = 'btn-save';
+            btnSave.textContent = '이 상품 DB 저장';
+
+            const statusEl = document.createElement('div');
+            statusEl.className = 'save-msg';
+
+            btnSave.addEventListener('click', () => saveOneToDb(item, statusEl, btnSave));
+
+            const jsonBlock = document.createElement('div');
+            jsonBlock.className = 'json-block';
+            jsonBlock.innerHTML = `
+                <details>
+                    <summary>소싱 데이터 JSON (test.json 형식)</summary>
+                    <pre>${safeJson}</pre>
+                </details>
+            `;
+
+            card.appendChild(title);
+            card.appendChild(asinRow);
+            card.appendChild(priceRow);
+            card.appendChild(btnSave);
+            card.appendChild(statusEl);
+            card.appendChild(jsonBlock);
+            itemsEl.appendChild(card);
+        });
+
+        const fullWrap = document.getElementById('full-json-wrap');
+        const fullPre = document.getElementById('full-json-pre');
+        if (data.results_json) {
+            fullPre.textContent = data.results_json;
+            fullWrap.style.display = 'block';
+        } else {
+            fullPre.textContent = JSON.stringify(data.results || [], null, 2);
+            fullWrap.style.display = 'block';
+        }
+
+        document.getElementById('result-area').style.display = 'block';
+    }
+
+    function setLoading(on) {
+        document.getElementById('loading').style.display = on ? 'block' : 'none';
+        document.getElementById('btn-submit').disabled = on;
+        if (on) document.getElementById('result-area').style.display = 'none';
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('error-msg');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    function hideError() {
+        document.getElementById('error-msg').style.display = 'none';
+    }
+</script>
+</body>
+</html>

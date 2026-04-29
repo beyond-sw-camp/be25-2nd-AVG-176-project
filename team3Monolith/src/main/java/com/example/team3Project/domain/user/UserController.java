@@ -1,19 +1,21 @@
 package com.example.team3Project.domain.user;
 
+import com.example.team3Project.domain.user.dto.FindPasswordRequest;
 import com.example.team3Project.domain.user.dto.LoginRequest;
 import com.example.team3Project.domain.user.dto.PasswordChangeRequest;
 import com.example.team3Project.domain.user.dto.SignupRequest;
 import com.example.team3Project.domain.user.dto.UserUpdateFormRequest;
 import com.example.team3Project.domain.user.dto.UserWithdrawRequest;
 import com.example.team3Project.global.annotation.LoginUser;
-import com.example.team3Project.global.exception.LoginException;
-import com.example.team3Project.global.jwt.JwtUtil;
-import jakarta.servlet.http.Cookie;
+import com.example.team3Project.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,7 +23,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -29,51 +38,36 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/users")
 public class UserController {
 
-    private static final String ACCESS_TOKEN_COOKIE = "token";
-    private static final int ACCESS_TOKEN_MAX_AGE = 60 * 60 * 2;
-
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    @Value("${app.auth.login-url:http://100.119.201.17:9000/users/login}")
-    private String loginUrl;
-
     @GetMapping("/login")
     public String loginForm(@RequestParam(defaultValue = "/") String redirectURL,
+                            @RequestParam(required = false) String error,
+                            @RequestParam(required = false) String username,
                             Model model) {
         if (!model.containsAttribute("loginRequest")) {
-            model.addAttribute("loginRequest", new LoginRequest());
+            LoginRequest loginRequest = new LoginRequest();
+            if (username != null && !username.isEmpty()) {
+                loginRequest.setUsername(username);
+            }
+            model.addAttribute("loginRequest", loginRequest);
         }
         model.addAttribute("redirectURL", redirectURL);
+
+        // Spring Security 인증 실패 에러 처리
+        if (error != null) {
+            String errorMessage = switch (error) {
+                case "social" -> "소셜 로그인 계정입니다. 해당 소셜 서비스로 로그인해주세요.";
+                case "locked" -> "계정이 잠겼습니다. 관리자에게 문의하세요.";
+                case "password" -> "비밀번호가 일치하지 않습니다.";
+                case "username" -> "아이디를 찾을 수 없습니다.";
+                default -> "로그인에 실패했습니다. 다시 시도해주세요.";
+            };
+            model.addAttribute("loginError", errorMessage);
+        }
+
         return "users/login";
-    }
-
-    @PostMapping("/login")
-    public String login(@Valid @ModelAttribute LoginRequest loginRequest,
-                        BindingResult bindingResult,
-                        @RequestParam(defaultValue = "/") String redirectURL,
-                        HttpServletResponse response,
-                        Model model) {
-
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("redirectURL", redirectURL);
-            return "users/login";
-        }
-
-        try {
-            User loginUser = userService.login(loginRequest);
-            String accessToken = jwtUtil.createAccessToken(loginUser);
-            addAccessTokenCookie(response, accessToken);
-
-            log.info("로그인 성공: userId={}, redirectURL={}", loginUser.getId(), redirectURL);
-            return "redirect:" + redirectURL;
-
-        } catch (LoginException e) {
-            model.addAttribute("errorType", e.getErrorType());
-            model.addAttribute("loginRequest", loginRequest);
-            model.addAttribute("redirectURL", redirectURL);
-            return "users/login";
-        }
     }
 
     @GetMapping("/signup")
@@ -82,10 +76,37 @@ public class UserController {
         return "users/signup";
     }
 
+    /**
+     * 아이디 중복 확인 API (AJAX용)
+     */
+    @GetMapping("/check-username")
+    @ResponseBody
+    public Map<String, Object> checkUsername(@RequestParam String username) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (username == null || username.trim().isEmpty()) {
+            response.put("available", false);
+            response.put("message", "아이디를 입력해주세요.");
+            return response;
+        }
+
+        boolean available = userService.isUsernameAvailable(username);
+        response.put("available", available);
+        response.put("message", available ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다.");
+
+        return response;
+    }
+
     @PostMapping("/signup")
     public String signup(@Valid @ModelAttribute("user") SignupRequest signupRequest,
                          BindingResult bindingResult,
-                         Model model) {
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
+
+        // 비밀번호 확인 검증
+        if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "passwordMismatch", "비밀번호가 일치하지 않습니다.");
+        }
 
         if (bindingResult.hasErrors()) {
             return "users/signup";
@@ -94,37 +115,46 @@ public class UserController {
         try {
             userService.signup(signupRequest);
             log.info("회원가입 성공: username={}", signupRequest.getUsername());
-            return redirectToLogin();
+            redirectAttributes.addFlashAttribute("signupSuccess", "회원가입이 완료되었습니다. 로그인해주세요.");
+            return "redirect:/users/login";
 
         } catch (IllegalStateException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            // 중복 아이디 에러를 BindingResult에 추가 (전체 에러로 표시)
+            bindingResult.reject("duplicateUsername", e.getMessage());
             return "users/signup";
         }
     }
 
     @PostMapping("/logout")
     public String logout(HttpServletResponse response) {
-        expireAccessTokenCookie(response);
+        // JWT 쿠키 삭제
+        ResponseCookie deleteCookie = jwtUtil.deleteJwtCookie();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
         log.info("로그아웃 완료");
-        return redirectToLogin();
+        return "redirect:/users/login";
     }
 
+    // HTML 뷰 - 브라우저에서 직접 접속 (Thymeleaf)
     @GetMapping("/me")
-    public String myPage(@LoginUser User user, Model model) {
+    public String myPageView(@LoginUser User user, Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
         model.addAttribute("user", user);
         return "users/me";
     }
 
+    // [Deprecated] /api/users/me 로 통합됨 (UserApiController)
+    // 프론트엔드는 GET /api/users/me 사용
+
     @GetMapping("/update")
     public String updateForm(@LoginUser User user, Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
         UserUpdateFormRequest formRequest = new UserUpdateFormRequest();
         formRequest.setNickname(user.getNickname());
+        formRequest.setPhoneNumber(user.getPhoneNumber());
         formRequest.setEmail(user.getEmail());
         model.addAttribute("userForm", formRequest);
 
@@ -139,9 +169,10 @@ public class UserController {
     public String update(@LoginUser User user,
                          @Valid @ModelAttribute("userForm") UserUpdateFormRequest formRequest,
                          BindingResult bindingResult,
+                         HttpServletResponse response,
                          Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
 
         if (bindingResult.hasErrors()) {
@@ -149,7 +180,17 @@ public class UserController {
         }
 
         try {
-            userService.updateUserInfo(user.getId(), formRequest);
+            User updatedUser = userService.updateUserInfo(user.getId(), formRequest);
+
+            // JWT 쿠키 갱신 (닉네임 변경 즉시 반영)
+            String token = jwtUtil.generateToken(
+                    updatedUser.getId(),
+                    updatedUser.getUsername(),
+                    updatedUser.getNickname()
+            );
+            ResponseCookie cookie = jwtUtil.createJwtCookie(token);
+            response.addHeader("Set-Cookie", cookie.toString());
+
             log.info("사용자 정보 수정 성공: userId={}", user.getId());
             return "redirect:/users/me";
         } catch (IllegalArgumentException e) {
@@ -161,7 +202,7 @@ public class UserController {
     @GetMapping("/delete")
     public String deleteForm(@LoginUser User user, Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
         model.addAttribute("withdrawRequest", new UserWithdrawRequest());
         return "users/delete";
@@ -174,7 +215,7 @@ public class UserController {
                          HttpServletResponse response,
                          Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
 
         if (bindingResult.hasErrors()) {
@@ -183,9 +224,13 @@ public class UserController {
 
         try {
             userService.deleteUser(user.getId(), withdrawRequest.getPassword());
-            expireAccessTokenCookie(response);
+
+            // JWT 쿠키 삭제
+            ResponseCookie deleteCookie = jwtUtil.deleteJwtCookie();
+            response.addHeader("Set-Cookie", deleteCookie.toString());
+
             log.info("회원 탈퇴 완료: userId={}", user.getId());
-            return redirectToLogin();
+            return "redirect:/users/login";
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "users/delete";
@@ -194,17 +239,17 @@ public class UserController {
 
     @PostMapping("/update/password")
     public String changePassword(@LoginUser User user,
-                                 @Valid @ModelAttribute("passwordChangeRequest") PasswordChangeRequest passwordRequest,
-                                 BindingResult bindingResult,
-                                 @ModelAttribute("userForm") UserUpdateFormRequest userForm,
-                                 Model model) {
+                                  @Valid @ModelAttribute("passwordChangeRequest") PasswordChangeRequest passwordRequest,
+                                  BindingResult bindingResult,
+                                  @ModelAttribute("userForm") UserUpdateFormRequest userForm,
+                                  Model model) {
         if (user == null) {
-            return redirectToLogin();
+            return "redirect:/users/login";
         }
 
+        // 새 비밀번호 일치 확인
         if (!passwordRequest.getNewPassword().equals(passwordRequest.getConfirmPassword())) {
-            bindingResult.rejectValue("confirmPassword", "passwordMismatch",
-                    "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+            bindingResult.rejectValue("confirmPassword", "passwordMismatch", "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
         if (bindingResult.hasErrors()) {
@@ -214,9 +259,7 @@ public class UserController {
         }
 
         try {
-            userService.changePassword(user.getId(),
-                    passwordRequest.getCurrentPassword(),
-                    passwordRequest.getNewPassword());
+            userService.changePassword(user.getId(), passwordRequest.getCurrentPassword(), passwordRequest.getNewPassword());
             model.addAttribute("passwordSuccessMessage", "비밀번호가 성공적으로 변경되었습니다.");
         } catch (IllegalArgumentException e) {
             model.addAttribute("passwordChangeRequest", passwordRequest);
@@ -226,7 +269,6 @@ public class UserController {
 
         return "users/update";
     }
-
     @GetMapping("/find-id")
     public String findIdForm() {
         return "users/find-id";
@@ -235,8 +277,19 @@ public class UserController {
     @PostMapping("/find-id")
     public String findId(@RequestParam("email") String email, Model model) {
         try {
-            String username = userService.findUsernameByEmail(email);
-            model.addAttribute("successMessage", "회원님의 아이디는 [" + username + "] 입니다.");
+            List<String> loginIds = userService.findAllLoginIdsByEmail(email);
+
+            if (loginIds.isEmpty()) {
+                model.addAttribute("errorMessage", "일치하는 회원 정보가 없습니다.");
+            } else if (loginIds.size() == 1) {
+                model.addAttribute("successMessage", "회원님의 아이디는 [" + loginIds.get(0) + "] 입니다.");
+                model.addAttribute("foundLoginIds", loginIds);
+                model.addAttribute("singleResult", true);
+            } else {
+                model.addAttribute("successMessage", "해당 이메일로 가입된 아이디가 " + loginIds.size() + "개 있습니다.");
+                model.addAttribute("foundLoginIds", loginIds);
+                model.addAttribute("multipleResults", true);
+            }
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
         }
@@ -249,35 +302,29 @@ public class UserController {
     }
 
     @PostMapping("/reset-pw")
-    public String resetPassword(@RequestParam("username") String username,
-                                @RequestParam("email") String email,
-                                Model model) {
+    @ResponseBody
+    public ResponseEntity<?> resetPassword(@RequestBody FindPasswordRequest request) {
         try {
-            userService.resetPassword(username, email);
-            model.addAttribute("successMessage", "임시 비밀번호가 이메일로 발송되었습니다.");
+            userService.resetPassword(request.getLoginId(), request.getEmail());
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, "입력하신 이메일로 임시 비밀번호가 전송되었습니다."));
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse(false, e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse(false, "비밀번호 재설정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
         }
-        return "users/reset-pw";
     }
 
-    private void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE, accessToken);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(ACCESS_TOKEN_MAX_AGE);
-        response.addCookie(cookie);
-    }
-
-    private void expireAccessTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
-    }
-
-    private String redirectToLogin() {
-        return "redirect:" + loginUrl;
+    // 간단한 응답 DTO
+    @Data
+    @AllArgsConstructor
+    public static class ApiResponse {
+        private boolean success;
+        private String message;
     }
 }

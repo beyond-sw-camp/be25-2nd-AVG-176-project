@@ -31,6 +31,7 @@ public class ProductProcessingService {
     private final PolicyQueryService policyQueryService;
     private final ProductRegistrationService productRegistrationService;
     private final DummyCoupangProductService dummyCoupangProductService;
+    private final ProductNameProcessor productNameProcessor;
 
     // 가공에 사용할 정책 묶음을 가져오는 메서드
     public PolicyBundle getPolicyBundleForProcessing(Long userId, MarketCode marketCode) {
@@ -42,6 +43,9 @@ public class ProductProcessingService {
     // productName : 검사할 상품명
     // policyBundle : 가공에 사용할 정책 묶음
     public boolean containsBlockedWord(String productName, PolicyBundle policyBundle) {
+        if (productNameProcessor != null) {
+            return productNameProcessor.containsBlockedWord(productName, policyBundle);
+        }
         for (BlockedWordResponse blockedWord : policyBundle.getBlockedWords()) {
             if (productName.contains(blockedWord.getBlockedWord())) {
                 return true;    // 금지어가 포함되는 경우
@@ -54,6 +58,9 @@ public class ProductProcessingService {
     // productName : 검사할 상품명
     // policyBundle : 가공에 사용할 정책 묶음
     public String applyReplacementWords(String productName, PolicyBundle policyBundle) {
+        if (productNameProcessor != null) {
+            return productNameProcessor.applyReplacementWords(productName, policyBundle);
+        }
         String processedName = productName;
 
         // 치환어 적용 - List로 받은 치환어에 대해 for문으로 돌려 작업한다.
@@ -73,6 +80,9 @@ public class ProductProcessingService {
     // 가공이 가능한 경우 가공된 상품명을 반환, 금지어로 제외되는 경우 값을 비워서 반환
     public Optional<String> processProductName(Long userId, MarketCode marketCode, String productName) {
         PolicyBundle policyBundle = getPolicyBundleForProcessing(userId, marketCode);
+        if (productNameProcessor != null) {
+            return productNameProcessor.processProductName(policyBundle, productName);
+        }
 
         // 금지어가 포함되어 있는지 검사
         if (containsBlockedWord(productName, policyBundle)) {

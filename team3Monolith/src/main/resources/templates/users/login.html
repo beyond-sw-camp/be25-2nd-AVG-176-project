@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>로그인</title>
+    <title>濡쒓렇??/title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
         .form-group { margin-bottom: 15px; }
@@ -17,6 +17,7 @@
 
         .signup-link { text-align: center; margin-top: 15px; }
         .error-message { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .success-message { color: #0f5132; background: #d1e7dd; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .field-error { color: #dc3545; font-size: 0.9em; margin-top: 5px; }
         .input-error { border: 1px solid #dc3545; }
 
@@ -83,48 +84,136 @@
         .sub-btn:hover {
             background-color: #e9ecef;
         }
+
+        /* ?뚯뀥 濡쒓렇??踰꾪듉 ?ㅽ???*/
+        .social-login-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .social-login-title {
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .social-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .social-btn:hover {
+            opacity: 0.9;
+        }
+
+        .social-btn-kakao {
+            background-color: #FEE500;
+            color: #000000;
+        }
+
+        .social-btn-google {
+            background-color: #ffffff;
+            color: #444444;
+            border: 1px solid #dadce0;
+        }
+
+        .social-btn-naver {
+            background-color: #03C75A;
+            color: #ffffff;
+        }
+
+        .social-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .oauth-error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
 <div class="back-button-wrap">
     <button type="button" class="back-button" onclick="location.href='/'">
-        ← 이전 화면
+        ???댁쟾 ?붾㈃
     </button>
 </div>
 
-<h2>로그인</h2>
+<h2>濡쒓렇??/h2>
 
-<div th:if="${errorType}" class="error-message" th:text="${errorType.message}"></div>
+<!-- ?뚯썝媛???깃났 硫붿떆吏 -->
+<div th:if="${signupSuccess}" class="success-message" th:text="${signupSuccess}"></div>
+
+<!-- 濡쒓렇???먮윭 硫붿떆吏 (Spring Security) -->
+<div th:if="${loginError}" class="error-message" th:text="${loginError}"></div>
+
+<!-- OAuth2 ?먮윭 硫붿떆吏 -->
+<div th:if="${oauth2Error}" class="oauth-error" th:text="${session.oauth2Error}"></div>
 
 <form th:action="@{/users/login}" th:object="${loginRequest}" method="post">
     <input type="hidden" name="redirectURL" th:value="${redirectURL}">
 
     <div class="form-group">
-        <label for="username">아이디</label>
+        <label for="username">?꾩씠??/label>
         <input type="text" id="username" th:field="*{username}"
-               th:classappend="${errorType?.name() == 'USERNAME_NOT_FOUND'} ? 'input-error' : ''"
+               th:classappend="${loginError != null && (loginError.contains('?꾩씠??) || loginError.contains('?뚯뀥') || loginError.contains('?좉꼈?듬땲??))} ? 'input-error' : ''"
                required>
-        <div th:if="${errorType?.name() == 'USERNAME_NOT_FOUND'}" class="field-error" th:text="${errorType.message}"></div>
     </div>
 
     <div class="form-group">
-        <label for="password">비밀번호</label>
+        <label for="password">鍮꾨?踰덊샇</label>
         <input type="password" id="password" th:field="*{password}"
-               th:classappend="${errorType?.name() == 'PASSWORD_MISMATCH'} ? 'input-error' : ''"
+               th:classappend="${loginError != null && loginError.contains('鍮꾨?踰덊샇')} ? 'input-error' : ''"
                required>
-        <div th:if="${errorType?.name() == 'PASSWORD_MISMATCH'}" class="field-error" th:text="${errorType.message}"></div>
     </div>
 
-    <button type="submit" class="signup-btn">확인</button>
+    <button type="submit" class="signup-btn">?뺤씤</button>
 </form>
 
 <div class="signup-link">
-    <a th:href="@{/users/signup}" class="signup-btn">회원가입</a>
+    <a th:href="@{/users/signup}" class="signup-btn">?뚯썝媛??/a>
 </div>
 
 <div class="sub-btn-group">
-    <a th:href="@{/users/find-id}" class="sub-btn">아이디 찾기</a>
-    <a th:href="@{/users/reset-pw}" class="sub-btn">비밀번호 찾기</a>
+    <a th:href="@{/users/find-id}" class="sub-btn">?꾩씠??李얘린</a>
+    <a th:href="@{/users/reset-pw}" class="sub-btn">鍮꾨?踰덊샇 李얘린</a>
+</div>
+
+<!-- ?뚯뀥 濡쒓렇???뱀뀡 -->
+<div class="social-login-section">
+    <div class="social-login-title">媛꾪렪 濡쒓렇??/div>
+    <div class="social-btn-group">
+        <a th:href="@{/oauth2/authorization/kakao}" class="social-btn social-btn-kakao">
+            <span>Kakao</span>
+        </a>
+        <a th:href="@{/oauth2/authorization/google}" class="social-btn social-btn-google">
+            <span>Google</span>
+        </a>
+        <a th:href="@{/oauth2/authorization/naver}" class="social-btn social-btn-naver">
+            <span>Naver</span>
+        </a>
+    </div>
 </div>
 </body>
 </html>
+

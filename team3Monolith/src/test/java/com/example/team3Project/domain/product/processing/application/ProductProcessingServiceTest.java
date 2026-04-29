@@ -47,7 +47,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 defaultPolicySetting(),
@@ -70,7 +70,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 defaultPolicySetting(),
@@ -97,7 +97,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 defaultPolicySetting(),
@@ -121,7 +121,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 defaultPolicySetting(),
@@ -200,7 +200,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 policySettingWithMinMarginProtect(false, BigDecimal.valueOf(30), BigDecimal.valueOf(5000)),
@@ -270,7 +270,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 defaultPolicySetting(),
@@ -340,7 +340,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 policySettingWithFee(BigDecimal.valueOf(70), BigDecimal.valueOf(30)),
@@ -386,7 +386,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 policySettingWithAutoPublish(true),
@@ -434,7 +434,7 @@ class ProductProcessingServiceTest {
         ProductRegistrationService productRegistrationService = mock(ProductRegistrationService.class);
         DummyCoupangProductService dummyCoupangProductService = mock(DummyCoupangProductService.class);
         ProductProcessingService productProcessingService =
-                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService);
+                new ProductProcessingService(policyQueryService, productRegistrationService, dummyCoupangProductService, new ProductNameProcessor());
 
         PolicyBundle policyBundle = new PolicyBundle(
                 policySettingWithAutoPublish(false),

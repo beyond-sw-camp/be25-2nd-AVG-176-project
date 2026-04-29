@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 // MinIO 클라이언트 빈 설정 (application.properties의 minio.* 값 사용)
-@Configuration
+@Configuration("legacyMinioConfig")
 public class MinioConfig {
 
     @Value("${minio.url}")

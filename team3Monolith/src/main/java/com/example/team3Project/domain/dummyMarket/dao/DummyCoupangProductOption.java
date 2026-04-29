@@ -14,7 +14,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 // dummy_coupang_product_option 테이블 매핑 엔티티
-@Entity
+@Entity(name = "DummyMarketCoupangProductOption")
 @Table(name = "dummy_coupang_product_option")
 @Getter
 public class DummyCoupangProductOption {

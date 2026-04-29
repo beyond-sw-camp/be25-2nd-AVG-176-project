@@ -21,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/cards")
+@RequestMapping({"/cards", "/api/cards"})
 public class CardController {
 
     private final CardService cardService;

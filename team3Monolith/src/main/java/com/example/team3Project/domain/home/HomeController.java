@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    @Value("${app.auth.login-url:http://100.119.201.17:9000/users/login}")
+    @Value("${app.auth.login-url:http://localhost:8081/users/login}")
     private String loginUrl;
 
-    @Value("${app.auth.signup-url:http://100.119.201.17:9000/users/signup}")
+    @Value("${app.auth.signup-url:http://localhost:8081/users/signup}")
     private String signupUrl;
 
     @GetMapping("/")
