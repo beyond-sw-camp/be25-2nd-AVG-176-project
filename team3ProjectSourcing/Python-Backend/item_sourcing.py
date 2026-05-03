@@ -5,7 +5,7 @@ import os
 import google.generativeai as genai
 import json
 import time
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -20,7 +20,7 @@ model = genai.GenerativeModel('gemini-3-flash-preview')
 
 OXYLABS_API_KEY = os.getenv("OXYLABS_API_KEY")
 OXYLABS_API_KEY2 = os.getenv("OXYLABS_API_KEY2")
-AUTH = aiohttp.BasicAuth(OXYLABS_API_KEY, OXYLABS_API_KEY2)
+AUTH = aiohttp.BasicAuth(OXYLABS_API_KEY, OXYLABS_API_KEY2) if OXYLABS_API_KEY and OXYLABS_API_KEY2 else None
 API_URL = 'https://realtime.oxylabs.io/v1/queries'
 
 # Oxylabs 동시 요청 최대 3개 제한
@@ -180,6 +180,9 @@ async def run_sourcing(req: SourcingRequest):
         f"시즌당 상품 수: {req.item_count}"
     )
     print("Gemini 키워드 생성 중...")
+
+    if AUTH is None:
+        raise HTTPException(status_code=500, detail="OXYLABS_API_KEY and OXYLABS_API_KEY2 must be set")
 
     keywords: List[str] = []
     for season in req.seasons:

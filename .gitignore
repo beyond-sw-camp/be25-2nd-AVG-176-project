@@ -25,3 +25,6 @@ replay_pid*
 
 # Local secrets/config
 team3Monolith/src/main/resources/application.properties
+
+# Python virtual environments
+.venv/
