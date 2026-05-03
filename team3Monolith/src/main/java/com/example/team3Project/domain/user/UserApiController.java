@@ -78,11 +78,11 @@ public class UserApiController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(@LoginUser User user) {
-        // 첫 화면에서 호출되는 엔드포인트.
-        // 비로그인도 예외가 아닌 정상 흐름으로 보기 위해 authenticated=false를 200으로 반환한다.
         if (user == null) {
-            return ResponseEntity.ok(Map.of(
-                    "authenticated", false
+            return ResponseEntity.status(401).body(Map.of(
+                    "authenticated", false,
+                    "error", "로그인이 필요합니다.",
+                    "code", "UNAUTHORIZED"
             ));
         }
 

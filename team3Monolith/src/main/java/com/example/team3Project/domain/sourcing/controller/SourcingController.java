@@ -16,9 +16,9 @@ import com.example.team3Project.domain.sourcing.entity.SourcingRegistrationStatu
 import com.example.team3Project.domain.sourcing.integration.SourcingProcessingWebhookService;
 import com.example.team3Project.domain.sourcing.service.SourcingPersistOutcome;
 import com.example.team3Project.domain.sourcing.service.SourcingService;
-import com.example.team3Project.support.auth.RequestUserIdResolver;
+import com.example.team3Project.domain.user.User;
+import com.example.team3Project.global.annotation.LoginUser;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,21 +30,19 @@ public class SourcingController {
 
     private final SourcingService sourcingService;
     private final SourcingProcessingWebhookService sourcingProcessingWebhookService;
-    private final RequestUserIdResolver requestUserIdResolver;
 
     /**
-     * ASIN(= productId)와 X-User-Id 로 소싱 단건 JSON 조회. 가공 서비스는 OpenFeign + 동일 DTO를 두고 호출하면 됨.
-     * Feign 클라이언트에는 반드시 RequestHeader("X-User-Id") 를 추가할 것(회원별 ASIN 구분).
+     * ASIN(= productId)와 로그인 사용자 ID로 소싱 단건 JSON 조회.
      * 단건 조회
      */
     // @GetMapping("/products/{sourceProductId}")
     // public ResponseEntity<SourcingProductResponse> getSourcingProduct(
-    //         HttpServletRequest request,
+    //         @LoginUser User user,
     //         @PathVariable("sourceProductId") String sourceProductId) {
-    //     Long userId = requestUserIdResolver.resolveForApi(request);
-    //     if (userId == null) {
+    //     if (user == null) {
     //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     //     }
+    //     Long userId = user.getId();
     //     return sourcingProductQueryService.findByAsinForUser(sourceProductId, userId)
     //             .map(ResponseEntity::ok)
     //             .orElse(ResponseEntity.notFound().build());
@@ -53,16 +51,15 @@ public class SourcingController {
     // 소싱한 데이터 저장. 찾은 데이터를 보고 정규화 후 DB에 저장.
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> handleFileUpload(
-            HttpServletRequest request,
+            @LoginUser User user,
             @RequestBody SourcingDTO sourcingDTO) {
         Map<String, Object> response = new HashMap<>();
-        // 여기서 토큰 검증 먼저 하고 그다음에 소싱한 데이터 맞는지 확인.
-        Long userId = requestUserIdResolver.resolveForApi(request);
-        if (userId == null) {
+        if (user == null) {
             response.put("status", "error");
-            response.put("message", "인증이 필요합니다. API Gateway에서 X-User-Id 헤더를 전달해 주세요.");
+            response.put("message", "로그인이 필요합니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
+        Long userId = user.getId();
         // 소싱한 데이터 맞는지 확인.
         List<String> errors = sourcingService.validateSourcingData(sourcingDTO, userId);
         if (!errors.isEmpty()) {

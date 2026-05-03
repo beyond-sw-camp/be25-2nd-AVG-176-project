@@ -51,7 +51,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/test",
-                                "/api/users/**",
                                 "/api/users/login", "/api/users/login/**",
                                 "/api/users/signup", "/api/users/signup/**",
                                 "/api/users/check-username", "/api/users/check-username/**",
@@ -93,8 +92,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Gateway è«?Frontend äºŒì‡±????‰ìŠœ (API Gateway æ¹²ê³•ì»??´ÑŠâ€?
-        // ?ëª? ??€???ë¼µ?ëªƒë’— è«›ì„ë±??Gateway?????¹ ?ë¬ë 
+        // Allow requests from the API gateway and local frontend.
         configuration.setAllowedOrigins(Arrays.asList(
                 gatewayUrl,
                 frontendUrl,
@@ -103,7 +101,7 @@ public class SecurityConfig {
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);  // JWT ?‘ì¢ê¶??ê¾©ë„š???ê¾ªë¹ ?ê¾©ë‹”
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -120,18 +118,16 @@ public class SecurityConfig {
             boolean isApiRequest = requestUri.startsWith("/api/");
             boolean wantsJson = accept != null && accept.contains("application/json");
             boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(requestedWith);
-
-            // API/XHR ?”ì²­?€ redirect ?€??401 JSON ?‘ë‹µ
+            // API and XHR requests should receive JSON 401 instead of redirects.
             if (isApiRequest || isAjax || wantsJson || requestUri.equals("/users/me")) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-                response.getWriter().write("{\"error\":\"ë¡œê·¸?¸ì´ ?„ìš”?©ë‹ˆ??\",\"code\":\"UNAUTHORIZED\"}");
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.\"}");
             } else {
-                // ?¼ë°˜ ?˜ì´ì§€ ?”ì²­?€ ë¡œê·¸???˜ì´ì§€ë¡??´ë™
+                // Browser page requests are redirected to the login page.
                 response.sendRedirect("/users/login?redirectURL=" + requestUri);
             }
         };
     }
 }
-

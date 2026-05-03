@@ -23,10 +23,10 @@ import com.example.team3Project.domain.sourcing.entity.SourcingRegistrationStatu
 import com.example.team3Project.domain.sourcing.integration.SourcingProcessingWebhookService;
 import com.example.team3Project.domain.sourcing.service.SourcingPersistOutcome;
 import com.example.team3Project.domain.sourcing.service.SourcingService;
-import com.example.team3Project.support.auth.RequestUserIdResolver;
+import com.example.team3Project.domain.user.User;
+import com.example.team3Project.global.annotation.LoginUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +43,6 @@ public class SourcingPageController {
     @Value("${sourcing.api-gateway-public-origin:}")
     private String apiGatewayPublicOrigin;
 
-    private final RequestUserIdResolver requestUserIdResolver;
     private final SourcingService sourcingService;
     private final SourcingProcessingWebhookService sourcingProcessingWebhookService;
     private final ObjectMapper objectMapper;
@@ -61,16 +60,16 @@ public class SourcingPageController {
     @PostMapping("/auto")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> autoSourcing(
-            HttpServletRequest request,
+            @LoginUser User user,
             @RequestBody Map<String, Object> body) {
         Map<String, Object> response = new HashMap<>();
 
-        Long userId = requestUserIdResolver.resolveForApi(request);
-        if (userId == null) {
+        if (user == null) {
             response.put("status", "error");
-            response.put("message", "인증이 필요합니다. API Gateway에서 X-User-Id 헤더를 전달해 주세요.");
+            response.put("message", "로그인이 필요합니다.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
+        Long userId = user.getId();
 
         // 1. Python 스크래핑 서버 호출
         ResponseEntity<Object> pythonResponse;
